@@ -51,11 +51,16 @@ def clear(canvas, canvas_img):
     for item in canvas.find_all():
         if item != canvas_img:
             canvas.delete(item)
+needle_img = Image.open(getpath("Assets/needle.png")).convert('RGBA')
+needle_img = needle_img.resize((430, 430), Image.NEAREST)
+needle_photo = ImageTk.PhotoImage(needle_img)
 def maingame(canvas, canvas_img):
     clear(canvas, canvas_img)
     canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
     canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
-
+    needle = canvas.create_image(250, 365, anchor='w', image=needle_photo)
+    canvas._needle = needle_photo
+    canvas.lift(needle)
 
 maingame(canvas, canvasbg)
 app.mainloop()

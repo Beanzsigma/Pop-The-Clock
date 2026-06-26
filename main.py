@@ -52,27 +52,29 @@ def clear(canvas, canvas_img):
         if item != canvas_img:
             canvas.delete(item)
 needle_raw = Image.open(getpath("Assets/needle.png")).convert('RGBA')
-padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))    # was 292
+padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))
 padded.paste(needle_raw, (97, 0))
 scale = 1.6
 needle_img = padded.resize((int(292 * scale), int(260 * scale)), Image.NEAREST)
-needle_photo = ImageTk.PhotoImage(needle_img)
+needle_frames = []
+for i in range(1080):
+    angle = i * (360 / 1080)
+    rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
+    needle_frames.append(ImageTk.PhotoImage(rotated))
 needle_angle = 0
 def rotate_needle():
-    global needle_angle, needle_photo
-    needle_angle = (needle_angle +6) % 360
-    rotated = needle_img.rotate(-needle_angle, resample=Image.BICUBIC, expand=False)
-    needle_photo = ImageTk.PhotoImage(rotated)
-    canvas.itemconfig(needle, image=needle_photo)
-    canvas._needle = needle_photo
-    app.after(16, rotate_needle)
+    global needle_angle
+    needle_angle = (needle_angle + 8) % 1080
+    canvas.itemconfig(needle, image=needle_frames[needle_angle])
+    canvas._needle = needle_frames[needle_angle]
+    app.after(20, rotate_needle)
 def maingame(canvas, canvas_img):
     global needle
     clear(canvas, canvas_img)
     canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
     canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
-    canvas._needle = needle_photo
-    needle = canvas.create_image(350, 350, anchor='center', image=needle_photo)
+    canvas._needle = needle_frames[0]
+    needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(needle)
 maingame(canvas, canvasbg)
 rotate_needle()

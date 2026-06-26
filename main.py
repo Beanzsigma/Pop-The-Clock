@@ -61,11 +61,21 @@ for i in range(1080):
     angle = i * (360 / 1080)
     rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
     needle_frames.append(ImageTk.PhotoImage(rotated))
+shadow_frames = []
+for i in range(1080):
+    angle = i * (360 / 1080)
+    rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
+    r, g, b, a= rotated.split()
+    a = a.point(lambda x: x*0.4)
+    shadow= Image.merge('RGBA', [r.point(lambda x: 0), g.point(lambda x: 0), b.point(lambda x: 0), a])
+    shadow_frames.append(ImageTk.PhotoImage(shadow))
 needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
     needle_angle = (needle_angle + 6 * needledir) % 1080
+    canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
+    canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
     canvas._needle = needle_frames[needle_angle]
     app.after(5, rotate_needle)
@@ -75,12 +85,15 @@ def flipdirection(e=None):
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
 def maingame(canvas, canvas_img):
-    global needle
+    global needle, shadow
     clear(canvas, canvas_img)
     canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
     canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
     canvas._needle = needle_frames[0]
+    shadow = canvas.create_image(354, 354, anchor='center', image=needle_frames[0])
+    canvas._shadow = shadow_frames[0]
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
+    canvas.lift(shadow)
     canvas.lift(needle)
 maingame(canvas, canvasbg)
 rotate_needle()

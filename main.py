@@ -43,7 +43,7 @@ def gifbg():
     def animate(frame_index=0):
         global afterid
         canvas.itemconfig(canvasbg, image=frames[frame_index])
-        afterid = app.after(50, animate, (frame_index + 1) % len(frames))  #speed change latr
+        afterid = app.after(25, animate, (frame_index + 1) % len(frames))  #speed change latr
     animate()
     return canvas, canvasbg
 canvas, canvasbg = gifbg()
@@ -54,13 +54,28 @@ def clear(canvas, canvas_img):
 needle_img = Image.open(getpath("Assets/needle.png")).convert('RGBA')
 needle_img = needle_img.resize((430, 430), Image.NEAREST)
 needle_photo = ImageTk.PhotoImage(needle_img)
+needle_angle = 0
+def padneedle(img):
+    w, h = img.size
+    padded = Image.new("RGBA", (w*2, h), (0, 0, 0, 0))
+    padded.paste(img, (w, 0))
+    return padded
+def rotate_needle():
+    global needle_angle, needle_photo
+    needle_angle = (needle_angle +2) % 360
+    rotated = needle_img.rotate(-needle_angle, resample=Image.BICUBIC, expand=False)
+    needle_photo = ImageTk.PhotoImage(rotated)
+    canvas.itemconfig(needle, image=needle_photo)
+    canvas._needle = needle_photo
+    app.after(16, rotate_needle)
 def maingame(canvas, canvas_img):
+    global needle
     clear(canvas, canvas_img)
     canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
     canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
-    needle = canvas.create_image(250, 365, anchor='w', image=needle_photo)
     canvas._needle = needle_photo
+    needle = canvas.create_image(250, 365, anchor='w', image=needle_photo)
     canvas.lift(needle)
-
 maingame(canvas, canvasbg)
+rotate_needle()
 app.mainloop()

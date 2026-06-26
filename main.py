@@ -57,14 +57,11 @@ padded.paste(needle_raw, (97, 0))
 scale = 1.6
 needle_img = padded.resize((int(292 * scale), int(260 * scale)), Image.NEAREST)
 needle_frames = []
-for i in range(1080):
-    angle = i * (360 / 1080)
-    rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
-    needle_frames.append(ImageTk.PhotoImage(rotated))
 shadow_frames = []
 for i in range(1080):
     angle = i * (360 / 1080)
     rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
+    needle_frames.append(ImageTk.PhotoImage(rotated))
     r, g, b, a= rotated.split()
     a = a.point(lambda x: x*0.4)
     shadow= Image.merge('RGBA', [r.point(lambda x: 0), g.point(lambda x: 0), b.point(lambda x: 0), a])
@@ -73,7 +70,7 @@ needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 8 * needledir) % 1080
+    needle_angle = (needle_angle + 8 * needledir) % 1080    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])

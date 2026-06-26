@@ -73,29 +73,53 @@ needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 6 * needledir) % 1080
+    needle_angle = (needle_angle + 8 * needledir) % 1080
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
     canvas._needle = needle_frames[needle_angle]
-    app.after(5, rotate_needle)
+    app.after(10, rotate_needle)
 def flipdirection(e=None):
     global needledir
     needledir *= -1
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
-def maingame(canvas, canvas_img):
+def normal(canvas, canvas_img):
     global needle, shadow
     clear(canvas, canvas_img)
     canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
     canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
+    canvas.create_text(351, 143, text='12', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    canvas.create_text(348, 140, text="12", font=("Press Start 2P", 20), fill="white", anchor='center')
+    canvas.create_text(453, 184, text='1', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    canvas.create_text(450, 181, text='1', font=("Press Start 2P", 20), fill='white', anchor='center')
+    canvas.create_text(517, 263, text='2', font=("Press Start 2P", 20), fill='#968d8d', anchor='center')
+    canvas.create_text(514, 260, text='2', font=("Press Start 2P", 20), fill='white', anchor='center')
+    canvas.create_text(541, 353, text='3', font=("Press Start 2P",20), fill="#967d8d", anchor='center')
+    canvas.create_text(538, 350, text='3', font=("Press Start 2P", 20), fill="white", anchor='center')
+    canvas.create_text(517, 443, text='4', font=("Press Start 2P", 20), fill="#967d8d", anchor='center')
+    canvas.create_text(514, 440, text='4', font=("Press Start 2P", 20), fill="white", anchor='center')
+    canvas.create_text(453, 516, text='5', font=("Press Start 2P", 20), fill="#967d8d", anchor='center')
+    canvas.create_text(450, 513, text='5', font=("Press Start 2P", 20), fill='white', anchor='center') 
+    canvas.create_text(353, 553, text='6', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
+    canvas.create_text(350, 550, text="6", font=("Press Start 2P", 20), fill="white", anchor='center')
+    canvas.create_text(253, 516, text='7', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
+    canvas.create_text(250, 513, text='7', font=('Press Start 2P', 20), fill="white", anchor='center')
+    canvas.create_text(167, 443, text='8', font=('Press Start 2P', 20), fill='#967d8d', anchor='center')
+    canvas.create_text(164, 440, text='8', font=("Press Start 2P", 20), fill='white', anchor='center')
+    canvas.create_text(155, 353, text='9', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
+    canvas.create_text(152, 350, text='9', font=("Press Start 2P", 20), fill='white', anchor='center')
+    canvas.create_text(179, 263, text='10', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
+    canvas.create_text(176, 260, text='10', font=("Press Start 2P", 20), fill='white', anchor='center')
+    canvas.create_text(250, 184, text='11', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
+    canvas.create_text(247, 181,text='11', font=("Press Start 2P", 20), fill='white', anchor='center' )
     canvas._needle = needle_frames[0]
     shadow = canvas.create_image(354, 354, anchor='center', image=needle_frames[0])
     canvas._shadow = shadow_frames[0]
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
-maingame(canvas, canvasbg)
+normal(canvas, canvasbg)
 rotate_needle()
 
 

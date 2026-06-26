@@ -43,7 +43,7 @@ def gifbg():
     def animate(frame_index=0):
         global afterid
         canvas.itemconfig(canvasbg, image=frames[frame_index])
-        afterid = app.after(20, animate, (frame_index + 1) % len(frames))  #speed change latr
+        afterid = app.after(35, animate, (frame_index + 1) % len(frames))  #speed change latr
     animate()
     return canvas, canvasbg
 canvas, canvasbg = gifbg()
@@ -62,12 +62,18 @@ for i in range(1080):
     rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
     needle_frames.append(ImageTk.PhotoImage(rotated))
 needle_angle = 0
+needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 8) % 1080
+    needle_angle = (needle_angle + 6 * needledir) % 1080
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
     canvas._needle = needle_frames[needle_angle]
-    app.after(20, rotate_needle)
+    app.after(5, rotate_needle)
+def flipdirection(e=None):
+    global needledir
+    needledir *= -1
+canvas.bind("<Button-1>", flipdirection)
+canvas.bind("<space>", flipdirection)
 def maingame(canvas, canvas_img):
     global needle
     clear(canvas, canvas_img)
@@ -78,4 +84,8 @@ def maingame(canvas, canvas_img):
     canvas.lift(needle)
 maingame(canvas, canvasbg)
 rotate_needle()
+
+
+
+
 app.mainloop()

@@ -43,7 +43,7 @@ def gifbg():
     def animate(frame_index=0):
         global afterid
         canvas.itemconfig(canvasbg, image=frames[frame_index])
-        afterid = app.after(35, animate, (frame_index + 1) % len(frames))  #speed change latr
+        afterid = app.after(35, animate, (frame_index + 1) % len(frames))  # change speed here when making menu thingy
     animate()
     return canvas, canvasbg
 canvas, canvasbg = gifbg()
@@ -70,7 +70,7 @@ needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 6 * needledir) % 500    #here change speed
+    needle_angle = (needle_angle + 8 * needledir) % 500    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
@@ -79,6 +79,9 @@ def rotate_needle():
 def flipdirection(e=None):
     global needledir
     needledir *= -1
+    degrees = (needle_angle / 500) * 360
+    number = int((degrees / 30 +3.3)% 12) or 12
+    numberclick(number)
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
 lasthigh = [None]
@@ -93,6 +96,27 @@ def highlightnumb():
             canvas.itemconfig(numhigh[number], fill="#353232")
         lasthigh[0] = number
     app.after(10, highlightnumb)
+fading = {}
+def numberclick(number):
+    if number not in numhigh:
+        return
+    fading[number] = 255 
+    execfade(number)
+def execfade(number):
+    if number not in fading:
+        return
+    intensity = fading[number]
+    if intensity <= 0:
+        canvas.itemconfig(numhigh[number], fill='white')
+        del fading[number]
+        return
+    r = int(255 * (1 - intensity / 255))
+    g = 255
+    b = int(255 * (1 - intensity / 255))
+    color = f'#{r:02x}{g:02x}{b:02x}'
+    canvas.itemconfig(numhigh[number], fill=color)
+    fading[number] = intensity -4
+    app.after(16, execfade, number)
 def normal(canvas, canvas_img):
     global needle, shadow
     clear(canvas, canvas_img)

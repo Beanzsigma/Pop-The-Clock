@@ -7,7 +7,7 @@ import os
 afterid = None
 app = ctk.CTk()
 app.title("Pop The Clock!")
-app.geometry("700x700")
+app.geometry("700x930")
 app.update()
 def loadfont(font_path):
     if sys.platform != 'win32':
@@ -21,6 +21,7 @@ def getpath(relative_path):
     except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+bottomafter = [None]
 def gifbg():
     global afterid
     if afterid:
@@ -36,8 +37,7 @@ def gifbg():
         a = a.point(lambda x: x * 0.4)
         frame.putalpha(a)
         frames.append(ImageTk.PhotoImage(frame.resize((700, 700))))
-    canvas = Canvas(parent, width=700, height=700,
-                    highlightthickness=0, bd=0, bg='black')
+    canvas = Canvas(parent, width=700, height=930,highlightthickness=0, bd=0, bg='black')
     canvas.place(x=0, y=0)
     canvasbg = canvas.create_image(0, 0, anchor='nw')
     canvas._frames = frames
@@ -48,6 +48,12 @@ def gifbg():
     animate()
     return canvas, canvasbg
 canvas, canvasbg = gifbg()
+def animatebottom():
+    if 'bottombg' in canvas.__dict__:
+        canvas.itemconfig(canvas._bottombg, image=bottombgframes[bottombgidx[0]])
+        bottombgidx[0] = (bottombgidx[0]+1) % len(bottombgframes)
+    bottomafter[0] = app.after(35, animatebottom)
+bottombgidx = [0]
 def clear(canvas, canvas_img):
     for item in canvas.find_all():
         if item != canvas_img:
@@ -62,12 +68,13 @@ loadingframes = []
 loadinggif = Image.open(getpath("Assets/loading.gif"))
 for frame in ImageSequence.Iterator(loadinggif):
     frame = frame.copy().convert("RGBA")
-    loadingframes.append(ImageTk.PhotoImage(frame.resize((700, 700), Image.NEAREST)))
+    loadingframes.append(ImageTk.PhotoImage(frame.resize((700, 800), Image.NEAREST)))
 loadingimg = canvas.create_image(0, 0, anchor='nw', image=loadingframes[0])
-loadinglabelshdw = canvas.create_text(353, 603, text='Loading...', font=("Press Start 2P", 18), fill='#968d8d')
-loadinglabel = canvas.create_text(350, 600, text='Loading...', font=("Press Start 2P", 18), fill='white')
-loadingcountshdw = canvas.create_text(353, 120, text='Frames rendered: 0\n    out of 500', font=('Press Start 2P', 18), fill='#968d8d')
-loadingcount = canvas.create_text(350, 120, text='Frames rendered: 0\n    out of 500', font=("Press Start 2P", 18), fill='white' )
+loadinglabelshdw = canvas.create_text(353, 623, text='Loading...', font=("Press Start 2P", 18), fill='#968d8d')
+loadingbottom = canvas.create_rectangle(0, 700, 700, 930, fill="#000000", outline="#000000")
+loadinglabel = canvas.create_text(350, 620, text='Loading...', font=("Press Start 2P", 18), fill='white')
+loadingcountshdw = canvas.create_text(353, 153, text='Frames rendered: 0\n    out of 210', font=('Press Start 2P', 18), fill='#968d8d')
+loadingcount = canvas.create_text(350, 150, text='Frames rendered: 0\n    out of 210', font=("Press Start 2P", 18), fill='white' )
 canvas._loadingframes = loadingframes
 loadingindx = [0]
 loadingafter = [None]
@@ -82,16 +89,16 @@ animateloading()
 needle_frames = []
 shadow_frames = []
 def prerender():
-    for i in range(500):
-        angle = i * (360 / 500)
+    for i in range(210):
+        angle = i * (360 / 210)
         rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
         needle_frames.append(ImageTk.PhotoImage(rotated))
         r, g, b, a = rotated.split()
         a = a.point(lambda x: x * 0.4)
         shadow = Image.merge('RGBA', [r.point(lambda x: 0), g.point(lambda x: 0), b.point(lambda x: 0), a])
         shadow_frames.append(ImageTk.PhotoImage(shadow))
-        app.after(0, lambda n=i+1: canvas.itemconfig(loadingcount, text=f"Frames rendered: {n}\n    out of 500"))
-        app.after(0, lambda n=i+1: canvas.itemconfig(loadingcountshdw, text=f'Frames rendered: {n}\n    out of 500'))
+        app.after(0, lambda n=i+1: canvas.itemconfig(loadingcount, text=f"Frames rendered: {n}\n    out of 210"))
+        app.after(0, lambda n=i+1: canvas.itemconfig(loadingcountshdw, text=f'Frames rendered: {n}\n    out of 210'))
     loadingdone.set()
     app.after(0, rendercomplete)
 def rendercomplete():
@@ -102,6 +109,7 @@ def rendercomplete():
     canvas.delete(loadinglabelshdw)
     canvas.delete(loadingcount)
     canvas.delete(loadingcountshdw)
+    canvas.delete(loadingbottom)
     normal(canvas, canvasbg)
     rotate_needle()
     highlightnumb()
@@ -110,7 +118,7 @@ needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 8 * needledir) % 500    #here change speed
+    needle_angle = (needle_angle + 8 * needledir) % 210    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
@@ -119,7 +127,7 @@ def rotate_needle():
 def flipdirection(e=None):
     global needledir
     needledir *= -1
-    degrees = (needle_angle / 500) * 360
+    degrees = (needle_angle / 210) * 360
     number = int((degrees / 30 +3.3)% 12) or 12
     numberclick(number)
 canvas.bind("<Button-1>", flipdirection)
@@ -127,7 +135,7 @@ canvas.bind("<space>", flipdirection)
 lasthigh = [None]
 numhigh = {}
 def highlightnumb():
-    degrees = (needle_angle / 500) * 360
+    degrees = (needle_angle / 210) * 360
     number = int((degrees / 30+ 3.3) % 12) or 12
     if lasthigh[0] != number:
         if lasthigh[0] in numhigh:
@@ -157,9 +165,18 @@ def execfade(number):
     canvas.itemconfig(numhigh[number], fill=color)
     fading[number] = intensity -4
     app.after(16, execfade, number)
+bottombgframes = []
+bottombg_gif = Image.open(getpath("Assets/bottomgif.gif"))
+for frame in ImageSequence.Iterator(bottombg_gif):
+    frame = frame.copy().convert("RGBA")
+    bottombgframes.append(ImageTk.PhotoImage(frame.resize((700, 230), Image.NEAREST)))
 def normal(canvas, canvas_img):
     global needle, shadow
     clear(canvas, canvas_img)
+    bottombg_img = canvas.create_image(0, 700, anchor='nw', image=bottombgframes[0])
+    canvas._bottombg = bottombg_img
+    canvas.__dict__['bottombg'] =True
+    animatebottom()
     canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
     canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
     numhigh[12] = canvas.create_text(351, 143, text='12', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
@@ -186,6 +203,8 @@ def normal(canvas, canvas_img):
     numhigh[10] = canvas.create_text(176, 260, text='10', font=("Press Start 2P", 20), fill='white', anchor='center')
     numhigh[11] = canvas.create_text(250, 184, text='11', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
     numhigh[11] = canvas.create_text(247, 181,text='11', font=("Press Start 2P", 20), fill='white', anchor='center' )
+    bottomline = canvas.create_line(0, 702, 700, 702, fill='black', width=2)
+    canvas.lift(bottomline)
     canvas._needle = needle_frames[0]
     shadow = canvas.create_image(354, 354, anchor='center', image=needle_frames[0])
     canvas._shadow = shadow_frames[0]

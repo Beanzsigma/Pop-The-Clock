@@ -7,7 +7,8 @@ import os
 afterid = None
 app = ctk.CTk()
 app.title("Pop The Clock!")
-app.geometry("700x930")
+app.geometry("700x819")
+app.resizable(False, False)
 app.update()
 def loadfont(font_path):
     if sys.platform != 'win32':
@@ -37,7 +38,7 @@ def gifbg():
         a = a.point(lambda x: x * 0.4)
         frame.putalpha(a)
         frames.append(ImageTk.PhotoImage(frame.resize((700, 700))))
-    canvas = Canvas(parent, width=700, height=930,highlightthickness=0, bd=0, bg='black')
+    canvas = Canvas(parent, width=700, height=819,highlightthickness=0, bd=0, bg='black')
     canvas.place(x=0, y=0)
     canvasbg = canvas.create_image(0, 0, anchor='nw')
     canvas._frames = frames
@@ -71,7 +72,7 @@ for frame in ImageSequence.Iterator(loadinggif):
     loadingframes.append(ImageTk.PhotoImage(frame.resize((700, 800), Image.NEAREST)))
 loadingimg = canvas.create_image(0, 0, anchor='nw', image=loadingframes[0])
 loadinglabelshdw = canvas.create_text(353, 623, text='Loading...', font=("Press Start 2P", 18), fill='#968d8d')
-loadingbottom = canvas.create_rectangle(0, 700, 700, 930, fill="#000000", outline="#000000")
+loadingbottom = canvas.create_rectangle(0, 700, 700, 819, fill="#000000", outline="#000000")
 loadinglabel = canvas.create_text(350, 620, text='Loading...', font=("Press Start 2P", 18), fill='white')
 loadingcountshdw = canvas.create_text(353, 153, text='Frames rendered: 0\n    out of 210', font=('Press Start 2P', 18), fill='#968d8d')
 loadingcount = canvas.create_text(350, 150, text='Frames rendered: 0\n    out of 210', font=("Press Start 2P", 18), fill='white' )
@@ -203,7 +204,7 @@ def normal(canvas, canvas_img):
     numhigh[10] = canvas.create_text(176, 260, text='10', font=("Press Start 2P", 20), fill='white', anchor='center')
     numhigh[11] = canvas.create_text(250, 184, text='11', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
     numhigh[11] = canvas.create_text(247, 181,text='11', font=("Press Start 2P", 20), fill='white', anchor='center' )
-    bottomline = canvas.create_line(0, 702, 700, 702, fill='black', width=2)
+    bottomline = canvas.create_line(0, 702, 700, 702, fill="#595959", width=5)
     canvas.lift(bottomline)
     canvas._needle = needle_frames[0]
     shadow = canvas.create_image(354, 354, anchor='center', image=needle_frames[0])

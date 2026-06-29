@@ -66,6 +66,8 @@ for frame in ImageSequence.Iterator(loadinggif):
 loadingimg = canvas.create_image(0, 0, anchor='nw', image=loadingframes[0])
 loadinglabelshdw = canvas.create_text(353, 603, text='Loading...', font=("Press Start 2P", 18), fill='#968d8d')
 loadinglabel = canvas.create_text(350, 600, text='Loading...', font=("Press Start 2P", 18), fill='white')
+loadingcountshdw = canvas.create_text(353, 120, text='Frames rendered: 0\n    out of 500', font=('Press Start 2P', 18), fill='#968d8d')
+loadingcount = canvas.create_text(350, 120, text='Frames rendered: 0\n    out of 500', font=("Press Start 2P", 18), fill='white' )
 canvas._loadingframes = loadingframes
 loadingindx = [0]
 loadingafter = [None]
@@ -88,6 +90,8 @@ def prerender():
         a = a.point(lambda x: x * 0.4)
         shadow = Image.merge('RGBA', [r.point(lambda x: 0), g.point(lambda x: 0), b.point(lambda x: 0), a])
         shadow_frames.append(ImageTk.PhotoImage(shadow))
+        app.after(0, lambda n=i+1: canvas.itemconfig(loadingcount, text=f"Frames rendered: {n}\n    out of 500"))
+        app.after(0, lambda n=i+1: canvas.itemconfig(loadingcountshdw, text=f'Frames rendered: {n}\n    out of 500'))
     loadingdone.set()
     app.after(0, rendercomplete)
 def rendercomplete():
@@ -96,6 +100,8 @@ def rendercomplete():
     canvas.delete(loadingimg)
     canvas.delete(loadinglabel)
     canvas.delete(loadinglabelshdw)
+    canvas.delete(loadingcount)
+    canvas.delete(loadingcountshdw)
     normal(canvas, canvasbg)
     rotate_needle()
     highlightnumb()

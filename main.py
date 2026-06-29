@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import Canvas
 from PIL import Image, ImageSequence, ImageTk
 import sys
+import threading
 import os
 afterid = None
 app = ctk.CTk()
@@ -56,16 +57,49 @@ padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))
 padded.paste(needle_raw, (97, 0))
 scale = 1.6
 needle_img = padded.resize((int(292 * scale), int(260 * scale)), Image.NEAREST)
+import threading
+loadingframes = []
+loadinggif = Image.open(getpath("Assets/loading.gif"))
+for frame in ImageSequence.Iterator(loadinggif):
+    frame = frame.copy().convert("RGBA")
+    loadingframes.append(ImageTk.PhotoImage(frame.resize((700, 700), Image.NEAREST)))
+loadingimg = canvas.create_image(0, 0, anchor='nw', image=loadingframes[0])
+loadinglabelshdw = canvas.create_text(353, 603, text='Loading...', font=("Press Start 2P", 18), fill='#968d8d')
+loadinglabel = canvas.create_text(350, 600, text='Loading...', font=("Press Start 2P", 18), fill='white')
+canvas._loadingframes = loadingframes
+loadingindx = [0]
+loadingafter = [None]
+loadingdone = threading.Event()
+def animateloading():
+    if loadingdone.is_set():
+        return
+    loadingindx[0] = (loadingindx[0] + 1) % len(loadingframes)
+    canvas.itemconfig(loadingimg, image=loadingframes[loadingindx[0]])
+    loadingafter[0] = app.after(50, animateloading)
+animateloading()
 needle_frames = []
 shadow_frames = []
-for i in range(500):
-    angle = i * (360 / 500)
-    rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
-    needle_frames.append(ImageTk.PhotoImage(rotated))
-    r, g, b, a= rotated.split()
-    a = a.point(lambda x: x*0.4)
-    shadow= Image.merge('RGBA', [r.point(lambda x: 0), g.point(lambda x: 0), b.point(lambda x: 0), a])
-    shadow_frames.append(ImageTk.PhotoImage(shadow))
+def prerender():
+    for i in range(500):
+        angle = i * (360 / 500)
+        rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
+        needle_frames.append(ImageTk.PhotoImage(rotated))
+        r, g, b, a = rotated.split()
+        a = a.point(lambda x: x * 0.4)
+        shadow = Image.merge('RGBA', [r.point(lambda x: 0), g.point(lambda x: 0), b.point(lambda x: 0), a])
+        shadow_frames.append(ImageTk.PhotoImage(shadow))
+    loadingdone.set()
+    app.after(0, rendercomplete)
+def rendercomplete():
+    if loadingafter[0]:
+        app.after_cancel(loadingafter[0])
+    canvas.delete(loadingimg)
+    canvas.delete(loadinglabel)
+    canvas.delete(loadinglabelshdw)
+    normal(canvas, canvasbg)
+    rotate_needle()
+    highlightnumb()
+threading.Thread(target=prerender, daemon=True).start()
 needle_angle = 0
 needledir = 1
 def rotate_needle():
@@ -152,10 +186,6 @@ def normal(canvas, canvas_img):
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
-normal(canvas, canvasbg)
-rotate_needle()
-highlightnumb()
-
 
 
 app.mainloop()

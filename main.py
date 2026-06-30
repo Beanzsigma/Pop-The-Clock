@@ -1,9 +1,12 @@
 import customtkinter as ctk
 from tkinter import Canvas
+import random
+targetnumber = [None]
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
 import os
+import time
 afterid = None
 app = ctk.CTk()
 app.title("Pop The Clock!")
@@ -112,6 +115,7 @@ def rendercomplete():
     canvas.delete(loadingcountshdw)
     canvas.delete(loadingbottom)
     normal(canvas, canvasbg)
+    newtarget()  
     rotate_needle()
     highlightnumb()
 threading.Thread(target=prerender, daemon=True).start()
@@ -130,19 +134,32 @@ def flipdirection(e=None):
     needledir *= -1
     degrees = (needle_angle / 210) * 360
     number = int((degrees / 30 +3.3)% 12) or 12
-    numberclick(number)
+    if number == targetnumber[0]:
+        numberclick(number)
+        newtarget()
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
 lasthigh = [None]
 numhigh = {}
+def newtarget():
+    if targetnumber[0] is not None and targetnumber[0] in numhigh:
+        canvas.itemconfig(numhigh[targetnumber[0]], fill='white')
+    choices = [n for n in numhigh if n != targetnumber[0]]
+    targetnumber[0] = random.choice(choices)
+    canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
 def highlightnumb():
     degrees = (needle_angle / 210) * 360
-    number = int((degrees / 30+ 3.3) % 12) or 12
+    number = int((degrees / 30 + 3.3) % 12) or 12
     if lasthigh[0] != number:
-        if lasthigh[0] in numhigh:
+        if lasthigh[0] in numhigh and lasthigh[0] != targetnumber[0] and lasthigh[0] not in fading:
             canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
-        if number in numhigh:
-            canvas.itemconfig(numhigh[number], fill="#353232")
+        elif lasthigh[0] == targetnumber[0] and lasthigh[0] is not None and lasthigh[0] not in fading:
+            canvas.itemconfig(numhigh[lasthigh[0]], fill="#fd1b5b")
+        if number in numhigh and number not in fading:
+            if number == targetnumber[0]:
+                canvas.itemconfig(numhigh[number], fill="#610822") 
+            else:
+                canvas.itemconfig(numhigh[number], fill="#353232")
         lasthigh[0] = number
     app.after(10, highlightnumb)
 fading = {}
@@ -218,6 +235,4 @@ def normal(canvas, canvas_img):
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
-
-
 app.mainloop()

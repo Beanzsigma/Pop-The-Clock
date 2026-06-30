@@ -123,7 +123,7 @@ needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 3 * needledir) % 210    #here change speed
+    needle_angle = (needle_angle + 2 * needledir) % 210    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])

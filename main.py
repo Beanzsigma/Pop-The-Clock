@@ -7,6 +7,7 @@ import sys
 import threading
 import os
 import time
+gameover = [False]
 afterid = None
 app = ctk.CTk()
 app.title("Pop The Clock!")
@@ -121,8 +122,49 @@ def rendercomplete():
 threading.Thread(target=prerender, daemon=True).start()
 needle_angle = 0
 needledir = 1
+overlayitems = []
+def showgameover():
+    gameover[0] = True
+    dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
+    dimphoto = ImageTk.PhotoImage(dimimg)
+    dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
+    canvas._dimphoto = dimphoto
+    boxw, boxh = 420, 220
+    x0, y0 = (700-boxw)//2, (819-boxh)//2
+    box = canvas.create_rectangle(x0,y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
+    titleshdw = canvas.create_text(353, y0+73, text='GAME OVER', font=("Press Start 2P", 24), fill='#968d8d')
+    title = canvas.create_text(350, y0+70, text='GAME OVER', font=("Press Start 2P", 24), fill='white')
+    retryshdw = canvas.create_text(353, y0+143, text="RETRY", font=("Press Start 2P", 22), fill='#968d8d')
+    retry = canvas.create_text(350, y0+140, text='RETRY', font=("Press Start 2P",22 ), fill='white')
+    overlayitems.extend([dim, box,title, titleshdw, retryshdw, retry ])
+    def restartent(e):
+        canvas.itemconfig(retryshdw, fill="#1c1c1c")
+        canvas.itemconfig(retry, fill="#968d8d")
+    def restartlev(e):
+        canvas.itemconfig(retry, fill="white")
+        canvas.itemconfig(retryshdw, fill='#968d8d')
+    canvas.tag_bind(retry, "<Leave>", restartlev)
+    canvas.tag_bind(retry, "<Enter>", restartent)
+    canvas.tag_bind(retryshdw, "<Leave>", restartlev)
+    canvas.tag_bind(retry, "<Enter>", restartent)
+    canvas.tag_bind(retry, "<Button-1>", restartgame)
+    canvas.tag_bind(retryshdw, "<Button-1>", restartgame)
+def restartgame(e=None):
+    global needle_angle, needledir
+    for item in overlayitems:
+        canvas.delete(item)
+    overlayitems.clear()
+    needle_angle = 0
+    needledir = 1
+    lasthigh[0] = None
+    gameover[0] = False
+    newtarget()
+    rotate_needle()
+    highlightnumb()
 def rotate_needle():
     global needle_angle
+    if gameover[0]:
+        return
     needle_angle = (needle_angle + 2 * needledir) % 210    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
@@ -131,6 +173,8 @@ def rotate_needle():
     app.after(10, rotate_needle)
 def flipdirection(e=None):
     global needledir
+    if gameover[0]:
+        return
     needledir *= -1
     degrees = (needle_angle / 210) * 360
     number = int((degrees / 30 +3.3)% 12) or 12
@@ -148,16 +192,21 @@ def newtarget():
     targetnumber[0] = random.choice(choices)
     canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
 def highlightnumb():
+    if gameover[0]:
+        return
     degrees = (needle_angle / 210) * 360
     number = int((degrees / 30 + 3.3) % 12) or 12
     if lasthigh[0] != number:
+        if lasthigh[0] == targetnumber[0]:
+            showgameover()
+            return
         if lasthigh[0] in numhigh and lasthigh[0] != targetnumber[0] and lasthigh[0] not in fading:
             canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
         elif lasthigh[0] == targetnumber[0] and lasthigh[0] is not None and lasthigh[0] not in fading:
             canvas.itemconfig(numhigh[lasthigh[0]], fill="#fd1b5b")
         if number in numhigh and number not in fading:
             if number == targetnumber[0]:
-                canvas.itemconfig(numhigh[number], fill="#610822") 
+                canvas.itemconfig(numhigh[number], fill="#610822")
             else:
                 canvas.itemconfig(numhigh[number], fill="#353232")
         lasthigh[0] = number

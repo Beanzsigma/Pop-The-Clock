@@ -119,7 +119,7 @@ needle_angle = 0
 needledir = 1
 def rotate_needle():
     global needle_angle
-    needle_angle = (needle_angle + 8 * needledir) % 210    #here change speed
+    needle_angle = (needle_angle + 3 * needledir) % 210    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
@@ -204,8 +204,11 @@ def normal(canvas, canvas_img):
     numhigh[10] = canvas.create_text(176, 260, text='10', font=("Press Start 2P", 20), fill='white', anchor='center')
     numhigh[11] = canvas.create_text(250, 184, text='11', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
     numhigh[11] = canvas.create_text(247, 181,text='11', font=("Press Start 2P", 20), fill='white', anchor='center' )
-    bottomline = canvas.create_line(0, 702, 700, 702, fill="#595959", width=5)
-    canvas.lift(bottomline)
+    divideimg = Image.open(getpath("Assets/lione2.png"))
+    resizeimg = divideimg.resize((770, 200), Image.Resampling.LANCZOS)
+    sepimg = ImageTk.PhotoImage(resizeimg)
+    canvas.create_image(350, 702, anchor='center', image=sepimg)
+    canvas._sepimg = sepimg
     canvas._needle = needle_frames[0]
     shadow = canvas.create_image(354, 354, anchor='center', image=needle_frames[0])
     canvas._shadow = shadow_frames[0]

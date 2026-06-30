@@ -170,6 +170,9 @@ bottombgframes = []
 bottombg_gif = Image.open(getpath("Assets/bottomgif.gif"))
 for frame in ImageSequence.Iterator(bottombg_gif):
     frame = frame.copy().convert("RGBA")
+    r, g, b, a = frame.split()
+    a = a.point(lambda x: x * 0.8)
+    frame.putalpha(a)
     bottombgframes.append(ImageTk.PhotoImage(frame.resize((700, 230), Image.NEAREST)))
 def normal(canvas, canvas_img):
     global needle, shadow

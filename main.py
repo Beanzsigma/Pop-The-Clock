@@ -7,6 +7,7 @@ import sys
 import threading
 import os
 import time
+inputlocked = [True]
 gameover = [False]
 afterid = None
 app = ctk.CTk()
@@ -116,15 +117,15 @@ def rendercomplete():
     canvas.delete(loadingcountshdw)
     canvas.delete(loadingbottom)
     normal(canvas, canvasbg)
-    newtarget()  
-    rotate_needle()
-    highlightnumb()
+    newtarget()
+    showcountdown(3)
 threading.Thread(target=prerender, daemon=True).start()
 needle_angle = 0
 needledir = 1
 overlayitems = []
 def showgameover():
     gameover[0] = True
+    inputlocked[0] = True
     dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
     dimphoto = ImageTk.PhotoImage(dimimg)
     dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
@@ -159,13 +160,34 @@ def restartgame(e=None):
     lasthigh[0] = None
     gameover[0] = False
     newtarget()
-    rotate_needle()
-    highlightnumb()
+    showcountdown(3)
+countdownitems = []
+def showcountdown(n):
+    for item in countdownitems:
+        canvas.delete(item)
+    countdownitems.clear()
+    if n == 0:
+        inputlocked[0] = False
+        rotate_needle()
+        highlightnumb()
+        return
+    inputlocked[0] = True
+    dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
+    dimphoto = ImageTk.PhotoImage(dimimg)
+    dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
+    canvas._cddimphoto = dimphoto
+    boxw, boxh = 420, 220
+    x0, y0 = (700-boxw)//2, (819-boxh)//2
+    box= canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh,fill='#201e1e', outline='#cac7c8', width=3 )
+    numshdw = canvas.create_text(353, y0+113, text=str(n), font=("Press Start 2P", 55), fill="#968d8d")
+    num = canvas.create_text(350, y0+110, text=str(n), font=("Press Start 2P", 55), fill='white' )
+    countdownitems.extend([dim, box, numshdw, num])
+    app.after(800, lambda: showcountdown(n-1))
 def rotate_needle():
     global needle_angle
     if gameover[0]:
         return
-    needle_angle = (needle_angle + 2 * needledir) % 210    #here change speed
+    needle_angle = (needle_angle + 1 * needledir) % 210    #here change speed
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
@@ -173,7 +195,7 @@ def rotate_needle():
     app.after(10, rotate_needle)
 def flipdirection(e=None):
     global needledir
-    if gameover[0]:
+    if gameover[0] or inputlocked[0]:
         return
     needledir *= -1
     degrees = (needle_angle / 210) * 360
@@ -181,6 +203,8 @@ def flipdirection(e=None):
     if number == targetnumber[0]:
         numberclick(number)
         newtarget()
+    else:
+        showgameover()
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
 lasthigh = [None]

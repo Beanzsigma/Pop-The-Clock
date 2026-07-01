@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import Canvas
 import random
 targetnumber = [None]
+clockminutes = [0]
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
@@ -159,9 +160,20 @@ def restartgame(e=None):
     needledir = 1
     lasthigh[0] = None
     gameover[0] = False
+    clockminutes[0] = 0
+    updateclock()
     newtarget()
     showcountdown(3)
 countdownitems = []
+clocktextids = {}
+def updateclock():
+    total = 11*60 + clockminutes[0]
+    hrs = (total // 60) % 12
+    mins = total % 60
+    timestr = f'{hrs}:{mins:02d}'
+    if 'shdw' in clocktextids:
+        canvas.itemconfig(clocktextids['shdw'], text=timestr)
+        canvas.itemconfig(clocktextids['main'], text=timestr)
 def showcountdown(n):
     for item in countdownitems:
         canvas.delete(item)
@@ -239,8 +251,13 @@ fading = {}
 def numberclick(number):
     if number not in numhigh:
         return
-    fading[number] = 255 
+    fading[number] = 255
     execfade(number)
+    clockminutes[0] = min(clockminutes[0] + 1, 60)
+    updateclock()
+    lasthigh[0] = None
+    if clockminutes[0] >= 60:
+        pass
 def execfade(number):
     if number not in fading:
         return
@@ -300,6 +317,8 @@ def normal(canvas, canvas_img):
     divideimg = Image.open(getpath("Assets/lione2.png"))
     resizeimg = divideimg.resize((770, 200), Image.Resampling.LANCZOS)
     sepimg = ImageTk.PhotoImage(resizeimg)
+    clocktextids['shdw'] = canvas.create_text(353, 753, text='11:00', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
+    clocktextids['main'] = canvas.create_text(350, 750, text='11:00', font=("Press Start 2P", 28), fill='white', anchor='center')
     canvas.create_image(350, 702, anchor='center', image=sepimg)
     canvas._sepimg = sepimg
     canvas._needle = needle_frames[0]

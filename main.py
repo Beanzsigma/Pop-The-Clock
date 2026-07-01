@@ -2,11 +2,14 @@ import customtkinter as ctk
 from tkinter import Canvas
 import random
 targetnumber = [None]
-clockminutes = [0]
+clockminutes = [30]
+generation = [0]
+justpenalty = [False]
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
 import os
+firstpick = [True]
 import time
 inputlocked = [True]
 gameover = [False]
@@ -119,12 +122,23 @@ def rendercomplete():
     canvas.delete(loadingbottom)
     normal(canvas, canvasbg)
     newtarget()
-    showcountdown(3)
+    generation[0] += 1
+    showcountdown(3, generation[0])
 threading.Thread(target=prerender, daemon=True).start()
 needle_angle = 0
 needledir = 1
 overlayitems = []
-def showgameover():
+def showgameover(penalty=True):
+    global needle_angle, needledir
+    if penalty:
+        clockminutes[0] -= 1
+        updateclock()
+        needle_angle = 0
+        needledir = 1
+        lasthigh[0] = None
+        justpenalty[0] = True
+        if clockminutes[0] >= 0:
+            return
     gameover[0] = True
     inputlocked[0] = True
     dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
@@ -133,12 +147,12 @@ def showgameover():
     canvas._dimphoto = dimphoto
     boxw, boxh = 420, 220
     x0, y0 = (700-boxw)//2, (819-boxh)//2
-    box = canvas.create_rectangle(x0,y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
+    box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
     titleshdw = canvas.create_text(353, y0+73, text='GAME OVER', font=("Press Start 2P", 24), fill='#968d8d')
     title = canvas.create_text(350, y0+70, text='GAME OVER', font=("Press Start 2P", 24), fill='white')
     retryshdw = canvas.create_text(353, y0+143, text="RETRY", font=("Press Start 2P", 22), fill='#968d8d')
-    retry = canvas.create_text(350, y0+140, text='RETRY', font=("Press Start 2P",22 ), fill='white')
-    overlayitems.extend([dim, box,title, titleshdw, retryshdw, retry ])
+    retry = canvas.create_text(350, y0+140, text='RETRY', font=("Press Start 2P", 22), fill='white')
+    overlayitems.extend([dim, box, title, titleshdw, retryshdw, retry])
     def restartent(e):
         canvas.itemconfig(retryshdw, fill="#1c1c1c")
         canvas.itemconfig(retry, fill="#968d8d")
@@ -160,10 +174,12 @@ def restartgame(e=None):
     needledir = 1
     lasthigh[0] = None
     gameover[0] = False
-    clockminutes[0] = 0
+    clockminutes[0] = 30
     updateclock()
+    firstpick[0] = True
     newtarget()
-    showcountdown(3)
+    generation[0] += 1
+    showcountdown(3, generation[0])
 countdownitems = []
 clocktextids = {}
 def updateclock():
@@ -174,14 +190,16 @@ def updateclock():
     if 'shdw' in clocktextids:
         canvas.itemconfig(clocktextids['shdw'], text=timestr)
         canvas.itemconfig(clocktextids['main'], text=timestr)
-def showcountdown(n):
+def showcountdown(n, gen):
     for item in countdownitems:
         canvas.delete(item)
     countdownitems.clear()
+    if gen != generation[0]:
+        return
     if n == 0:
         inputlocked[0] = False
-        rotate_needle()
-        highlightnumb()
+        rotate_needle(gen)
+        highlightnumb(gen)
         return
     inputlocked[0] = True
     dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
@@ -190,21 +208,23 @@ def showcountdown(n):
     canvas._cddimphoto = dimphoto
     boxw, boxh = 420, 220
     x0, y0 = (700-boxw)//2, (819-boxh)//2
-    box= canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh,fill='#201e1e', outline='#cac7c8', width=3 )
+    box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill='#201e1e', outline='#cac7c8', width=3)
     numshdw = canvas.create_text(353, y0+113, text=str(n), font=("Press Start 2P", 55), fill="#968d8d")
-    num = canvas.create_text(350, y0+110, text=str(n), font=("Press Start 2P", 55), fill='white' )
+    num = canvas.create_text(350, y0+110, text=str(n), font=("Press Start 2P", 55), fill='white')
     countdownitems.extend([dim, box, numshdw, num])
-    app.after(800, lambda: showcountdown(n-1))
-def rotate_needle():
+    app.after(800, lambda: showcountdown(n-1, gen))
+def rotate_needle(gen=None):
     global needle_angle
+    if gen is not None and gen != generation[0]:
+        return
     if gameover[0]:
         return
-    needle_angle = (needle_angle + 1 * needledir) % 210    #here change speed
+    needle_angle = (needle_angle + 1 * needledir) % 210
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
     canvas._needle = needle_frames[needle_angle]
-    app.after(10, rotate_needle)
+    app.after(10, lambda: rotate_needle(generation[0]))
 def flipdirection(e=None):
     global needledir
     if gameover[0] or inputlocked[0]:
@@ -224,18 +244,27 @@ numhigh = {}
 def newtarget():
     if targetnumber[0] is not None and targetnumber[0] in numhigh:
         canvas.itemconfig(numhigh[targetnumber[0]], fill='white')
-    choices = [n for n in numhigh if n != targetnumber[0]]
+    if firstpick[0]:
+        choices = [n for n in numhigh if n != targetnumber[0] and n not in (2, 3, 4, 5)]
+        firstpick[0] = False
+    else:
+        choices = [n for n in numhigh if n != targetnumber[0]]
     targetnumber[0] = random.choice(choices)
     canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
-def highlightnumb():
+def highlightnumb(gen=None):
+    if gen is not None and gen != generation[0]:
+        return
     if gameover[0]:
         return
     degrees = (needle_angle / 210) * 360
     number = int((degrees / 30 + 3.3) % 12) or 12
     if lasthigh[0] != number:
         if lasthigh[0] == targetnumber[0]:
-            showgameover()
-            return
+            if justpenalty[0]:
+                justpenalty[0] = False
+            else:
+                showgameover()
+                return
         if lasthigh[0] in numhigh and lasthigh[0] != targetnumber[0] and lasthigh[0] not in fading:
             canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
         elif lasthigh[0] == targetnumber[0] and lasthigh[0] is not None and lasthigh[0] not in fading:
@@ -246,7 +275,7 @@ def highlightnumb():
             else:
                 canvas.itemconfig(numhigh[number], fill="#353232")
         lasthigh[0] = number
-    app.after(10, highlightnumb)
+    app.after(10, lambda: highlightnumb(generation[0]))
 fading = {}
 def numberclick(number):
     if number not in numhigh:
@@ -317,8 +346,8 @@ def normal(canvas, canvas_img):
     divideimg = Image.open(getpath("Assets/lione2.png"))
     resizeimg = divideimg.resize((770, 200), Image.Resampling.LANCZOS)
     sepimg = ImageTk.PhotoImage(resizeimg)
-    clocktextids['shdw'] = canvas.create_text(353, 753, text='11:00', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
-    clocktextids['main'] = canvas.create_text(350, 750, text='11:00', font=("Press Start 2P", 28), fill='white', anchor='center')
+    clocktextids['shdw'] = canvas.create_text(353, 753, text='11:30', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
+    clocktextids['main'] = canvas.create_text(350, 750, text='11:30', font=("Press Start 2P", 28), fill='white', anchor='center')
     canvas.create_image(350, 702, anchor='center', image=sepimg)
     canvas._sepimg = sepimg
     canvas._needle = needle_frames[0]

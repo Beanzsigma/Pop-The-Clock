@@ -4,7 +4,8 @@ import random
 targetnumber = [None]
 clockminutes = [30]
 generation = [0]
-justpenalty = [False]
+passedtarget = [False]
+needle_on_target = [False]
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
@@ -133,10 +134,9 @@ def showgameover(penalty=True):
     if penalty:
         clockminutes[0] -= 1
         updateclock()
-        needle_angle = 0
-        needledir = 1
+        if targetnumber[0] in numhigh:
+            canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
         lasthigh[0] = None
-        justpenalty[0] = True
         if clockminutes[0] >= 0:
             return
     gameover[0] = True
@@ -242,6 +242,7 @@ canvas.bind("<space>", flipdirection)
 lasthigh = [None]
 numhigh = {}
 def newtarget():
+    needle_on_target[0] = False
     if targetnumber[0] is not None and targetnumber[0] in numhigh:
         canvas.itemconfig(numhigh[targetnumber[0]], fill='white')
     if firstpick[0]:
@@ -258,17 +259,22 @@ def highlightnumb(gen=None):
         return
     degrees = (needle_angle / 210) * 360
     number = int((degrees / 30 + 3.3) % 12) or 12
+    is_on_target = (number == targetnumber[0])
+    if needle_on_target[0] and not is_on_target:
+        clockminutes[0] -= 1
+        updateclock()
+        if targetnumber[0] in numhigh:
+            canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
+        if clockminutes[0] < 0:
+            showgameover(penalty=False)
+            return
+    needle_on_target[0] = is_on_target
     if lasthigh[0] != number:
-        if lasthigh[0] == targetnumber[0]:
-            if justpenalty[0]:
-                justpenalty[0] = False
+        if lasthigh[0] is not None and lasthigh[0] in numhigh and lasthigh[0] not in fading:
+            if lasthigh[0] == targetnumber[0]:
+                canvas.itemconfig(numhigh[lasthigh[0]], fill="#fd1b5b")
             else:
-                showgameover()
-                return
-        if lasthigh[0] in numhigh and lasthigh[0] != targetnumber[0] and lasthigh[0] not in fading:
-            canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
-        elif lasthigh[0] == targetnumber[0] and lasthigh[0] is not None and lasthigh[0] not in fading:
-            canvas.itemconfig(numhigh[lasthigh[0]], fill="#fd1b5b")
+                canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
         if number in numhigh and number not in fading:
             if number == targetnumber[0]:
                 canvas.itemconfig(numhigh[number], fill="#610822")
@@ -285,6 +291,7 @@ def numberclick(number):
     clockminutes[0] = min(clockminutes[0] + 1, 60)
     updateclock()
     lasthigh[0] = None
+    needle_on_target[0] = False
     if clockminutes[0] >= 60:
         pass
 def execfade(number):

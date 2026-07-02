@@ -14,6 +14,10 @@ firstpick = [True]
 import time
 inputlocked = [True]
 gameover = [False]
+instantlose = [False]
+startclock = [30]
+needleafter = [None]
+highlightafter = [None]
 afterid = None
 app = ctk.CTk()
 app.title("Pop The Clock!")
@@ -75,7 +79,7 @@ def animatebottom():
 bottombgidx = [0]
 def clear(canvas, canvas_img):
     for item in canvas.find_all():
-        if item != canvas_img:
+        if item != canvas_img and item not in loading_items:
             canvas.delete(item)
 needle_raw = Image.open(getpath("Assets/needle.png")).convert('RGBA')
 padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))
@@ -101,6 +105,7 @@ canvas.itemconfig(loadinglabelshdw, state='hidden')
 canvas.itemconfig(loadingcount, state='hidden')
 canvas.itemconfig(loadingcountshdw, state='hidden')
 canvas.itemconfig(loadingbottom, state='hidden')
+loading_items = {loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom}
 loadingindx = [0]
 loadingafter = [None]
 loadingdone = threading.Event()
@@ -116,6 +121,8 @@ shadow_frames = []
 def prerender():
     needle_frames.clear()
     shadow_frames.clear()
+    loadingdone.clear()
+    loadingindx[0] = 0
     for i in range(210):
         angle = i * (360 / 210)
         rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
@@ -131,12 +138,13 @@ def prerender():
 def rendercomplete():
     if loadingafter[0]:
         app.after_cancel(loadingafter[0])
-    canvas.delete(loadingimg)
-    canvas.delete(loadinglabel)
-    canvas.delete(loadinglabelshdw)
-    canvas.delete(loadingcount)
-    canvas.delete(loadingcountshdw)
-    canvas.delete(loadingbottom)
+    canvas.itemconfig(loadingimg, state='hidden')
+    canvas.itemconfig(loadinglabel, state='hidden')
+    canvas.itemconfig(loadinglabelshdw, state='hidden')
+    canvas.itemconfig(loadingcount, state='hidden')
+    canvas.itemconfig(loadingcountshdw, state='hidden')
+    canvas.itemconfig(loadingbottom, state='hidden')
+    clockminutes[0] = startclock[0]
     normal(canvas, canvasbg)
     newtarget()
     generation[0] += 1
@@ -146,7 +154,7 @@ needledir = 1
 overlayitems = []
 def showgameover(penalty=True):
     global needle_angle, needledir
-    if penalty:
+    if penalty and not instantlose[0]:
         clockminutes[0] -= 1
         updateclock()
         if targetnumber[0] in numhigh:
@@ -167,8 +175,8 @@ def showgameover(penalty=True):
     title = canvas.create_text(350, y0+70, text='GAME OVER', font=("Press Start 2P", 24), fill='white')
     retryshdw = canvas.create_text(268, y0+143, text="RETRY", font=("Press Start 2P", 18), fill='#968d8d')
     retry = canvas.create_text(265, y0+140, text='RETRY', font=("Press Start 2P", 18), fill='white')
-    homeshdw = canvas.create_text(438, y0+143, text="HOME", font=("Press Start 2P", 18), fill="#968d8d")
-    home = canvas.create_text(435, y0+140, text='HOME', font=("Press Start 2P", 18), fill='white')
+    homeshdw = canvas.create_text(438, y0+143, text="BACK", font=("Press Start 2P", 18), fill="#968d8d")
+    home = canvas.create_text(435, y0+140, text='BACK', font=("Press Start 2P", 18), fill='white')
     overlayitems.extend([dim, box, title, titleshdw, retryshdw, retry, homeshdw, home])
     def restartent(e):
         canvas.itemconfig(retryshdw, fill="#1c1c1c")
@@ -199,11 +207,17 @@ def restartgame(e=None):
     for item in overlayitems:
         canvas.delete(item)
     overlayitems.clear()
+    if needleafter[0]:
+        app.after_cancel(needleafter[0])
+        needleafter[0] = None
+    if highlightafter[0]:
+        app.after_cancel(highlightafter[0])
+        highlightafter[0] = None
     needle_angle = 0
     needledir = 1
     lasthigh[0] = None
     gameover[0] = False
-    clockminutes[0] = 30
+    clockminutes[0] = startclock[0]
     updateclock()
     firstpick[0] = True
     newtarget()
@@ -223,6 +237,12 @@ def gohome(e=None):
     if afterid:
         app.after_cancel(afterid)
         afterid = None
+    if needleafter[0]:
+        app.after_cancel(needleafter[0])
+        needleafter[0] = None
+    if highlightafter[0]:
+        app.after_cancel(highlightafter[0])
+        highlightafter[0] = None
     clear(canvas, canvasbg)
     canvas.itemconfig(canvasbg, image='')
     numhigh.clear()
@@ -232,6 +252,8 @@ def gohome(e=None):
     firstpick[0] = True
     needle_angle = 0
     needledir = 1
+    instantlose[0] = False
+    startclock[0] = 30
     clockminutes[0] = 30
     main(straight_to_noob=True)
 countdownitems = []
@@ -278,7 +300,7 @@ def rotate_needle(gen=None):
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
     canvas._needle = needle_frames[needle_angle]
-    app.after(10, lambda: rotate_needle(generation[0]))
+    needleafter[0] = app.after(10, lambda: rotate_needle(generation[0]))
 def flipdirection(e=None):
     global needledir
     if gameover[0] or inputlocked[0]:
@@ -315,6 +337,9 @@ def highlightnumb(gen=None):
     number = int((degrees / 30 + 3.3) % 12) or 12
     is_on_target = (number == targetnumber[0])
     if needle_on_target[0] and not is_on_target:
+        if instantlose[0]:
+            showgameover(penalty=False)
+            return
         clockminutes[0] -= 1
         updateclock()
         if targetnumber[0] in numhigh:
@@ -335,7 +360,7 @@ def highlightnumb(gen=None):
             else:
                 canvas.itemconfig(numhigh[number], fill="#353232")
         lasthigh[0] = number
-    app.after(10, lambda: highlightnumb(generation[0]))
+    highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
 fading = {}
 def numberclick(number):
     if number not in numhigh:
@@ -373,6 +398,9 @@ for frame in ImageSequence.Iterator(bottombg_gif):
     bottombgframes.append(ImageTk.PhotoImage(frame.resize((700, 230), Image.NEAREST)))
 def normal(canvas, canvas_img):
     global needle, shadow
+    numhigh.clear()
+    fading.clear()
+    clocktextids.clear()
     clear(canvas, canvas_img)
     gifbg()
     bottombg_img = canvas.create_image(0, 700, anchor='nw', image=bottombgframes[0])
@@ -549,12 +577,19 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             menucanvas.itemconfig(noobshdw, fill="#968d8d")
         def startgame(e=None):
             global afterid
+            instantlose[0] = False
+            startclock[0] = 30
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
             menucanvas.destroy()
             for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
                 canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
             animateloading()
             threading.Thread(target=prerender, daemon=True).start()
         menucanvas.tag_bind(noob, "<Enter>", noobent)
@@ -563,6 +598,38 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(noobshdw, "<Enter>", noobent)
         menucanvas.tag_bind(noobshdw, "<Button-1>", startgame)
         menucanvas.tag_bind(noob, "<Button-1>", startgame)
+        main_rounded_rect(menucanvas, 30, 177, 230, 232, r=23, color="#968d8d", width=2)
+        proshdw = menucanvas.create_text(133, 208, text="PRO", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        pro = menucanvas.create_text(130, 205, text='PRO', font=("Press Start 2P", 33), fill='white', anchor='center')
+        def proent(e):
+            menucanvas.itemconfig(proshdw, fill="#1c1c1c")
+            menucanvas.itemconfig(pro, fill='#968d8d')
+        def prolev(e):
+            menucanvas.itemconfig(pro, fill='white')
+            menucanvas.itemconfig(proshdw, fill="#968d8d")
+        def startpro(e=None):
+            global afterid
+            instantlose[0] = True
+            startclock[0] = 0
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
+                canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
+        menucanvas.tag_bind(pro, "<Enter>", proent)
+        menucanvas.tag_bind(proshdw, "<Enter>", proent)
+        menucanvas.tag_bind(pro, "<Leave>", prolev)
+        menucanvas.tag_bind(proshdw, "<Leave>", prolev)
+        menucanvas.tag_bind(pro, "<Button-1>", startpro)
+        menucanvas.tag_bind(proshdw, "<Button-1>", startpro)
     menucanvas.tag_bind(classic, "<Button-1>", clickclassic)
     menucanvas.tag_bind(classicshdw, "<Button-1>", clickclassic)
     if straight_to_noob:

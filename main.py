@@ -423,6 +423,25 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
     menucanvas.tag_bind(classicshdw, "<Enter>", classicent)
     menucanvas.tag_bind(classic, "<Leave>", classiclev)
     menucanvas.tag_bind(classicshdw, "<Leave>", classiclev)
+    infoitems = []
+    def showinfo(e=None):
+        dimimg = Image.new("RGBA", (700, 819), (0, 0, 0, 140))
+        dimphoto = ImageTk.PhotoImage(dimimg)
+        dim = menucanvas.create_image(0, 0, anchor='nw', image=dimphoto)
+        menucanvas._infodimphoto = dimphoto
+        boxw, boxh = 420, 220
+        x0, y0 = (700-boxw)//2, (819-boxh)//2
+        box = menucanvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill='#201e1e', outline="#cac7c8", width=3)
+        textshdw=menucanvas.create_text(353, y0+103, text='A really tuff\ngame inspired by\nthe classic Pop\nThe Clock arcade\ngame :)', font=("Press Start 2P", 17), fill='#968d8d', anchor='center')
+        text= menucanvas.create_text(350, y0+100, text='A really tuff\ngame inspired by\nthe classic Pop\nThe Clock arcade\ngame :)', font=("Press Start 2P", 17), fill='white', anchor='center')
+        infoitems.extend([dim, box, textshdw, text])
+        menucanvas.tag_bind(dim, "<Button-1>", closeinfo)
+    def closeinfo(e=None):
+        for item in infoitems:
+            menucanvas.delete(item)
+        infoitems.clear()
+    menucanvas.tag_bind(info, "<Button-1>", showinfo)
+    menucanvas.tag_bind(infoshdw, "<Button-1>", showinfo)
 
 main()
 app.mainloop()

@@ -410,15 +410,17 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
         itemz.append(menucanvas.create_line(x1+r, y2, x2-r, y2, **line_kwargs))           
         itemz.append(menucanvas.create_line(x1, y1+r, x1, y2-r, **line_kwargs))
         itemz.append(menucanvas.create_line(x2, y1+r, x2, y2-r, **line_kwargs))
-        return items
-    menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 27), fill='#968d8d')
-    menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",27), fill='white')
+        return itemz
+    main_rounded_rect(menucanvas, 20, 430, 283, 490, r=23, color="#968d8d", width=2)
+    main_rounded_rect(menucanvas, 425, 430, 670, 490, r=23, color="#968d8d", width=2)
+    menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 32), fill='#968d8d')
+    menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",32), fill='white')
     classicshdw= menucanvas.create_text(153, 463, text='CLASSIC', font=("Press Start 2P", 24), fill='#968d8d')
     classic = menucanvas.create_text(150, 460, text="CLASSIC", font=("Press Start 2P" ,24), fill='white')
     specshdw= menucanvas.create_text(553, 463, text="SPECIAL", font=("Press Start 2P", 24), fill="#968d8d")
     spec = menucanvas.create_text(550, 460, text='SPECIAL', font=("Press Start 2P", 24), fill='white')
-    infoshdw = menucanvas.create_text(596, 321, text="ⓘ", font=("Arial", 15), fill='#968d8d')
-    info = menucanvas.create_text(595, 319, text="ⓘ", font=("Arial", 15), fill='white')
+    infoshdw = menucanvas.create_text(641, 309, text="ⓘ", font=("Arial", 15), fill='#968d8d')
+    info = menucanvas.create_text(639, 308, text="ⓘ", font=("Arial", 15), fill='white')
     def infoent(e):
         menucanvas.itemconfig(info, fill="#968d8d")
         menucanvas.itemconfig(infoshdw, fill="#1c1c1c")

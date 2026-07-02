@@ -36,6 +36,19 @@ bottomafter = [None]
 canvas = Canvas(app, width=700, height=819, highlightthickness=0, bd=0, bg='black')
 canvas.place(x=0, y=0)
 canvasbg = canvas.create_image(0, 0, anchor='nw')
+def rounded_rect(canvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
+    items = []
+    arc_kwargs = {"outline": color, "width": width}
+    line_kwargs = {"fill": color, "width": width}
+    items.append(canvas.create_arc(x1, y1, x1+2*r, y1+2*r, start=90, extent=90, style="arc", **arc_kwargs))
+    items.append(canvas.create_arc(x2-2*r, y1, x2, y1+2*r, start=0, extent=90, style="arc", **arc_kwargs))
+    items.append(canvas.create_arc(x1, y2-2*r, x1+2*r, y2, start=180, extent=90, style="arc", **arc_kwargs))
+    items.append(canvas.create_arc(x2-2*r, y2-2*r, x2, y2, start=270, extent=90, style="arc", **arc_kwargs))
+    items.append(canvas.create_line(x1+r, y1, x2-r, y1, **line_kwargs))
+    items.append(canvas.create_line(x1+r, y2, x2-r, y2, **line_kwargs))           
+    items.append(canvas.create_line(x1, y1+r, x1, y2-r, **line_kwargs))
+    items.append(canvas.create_line(x2, y1+r, x2, y2-r, **line_kwargs))
+    return items
 def gifbg():
     global afterid
     if afterid:
@@ -385,6 +398,19 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
         menucanvas.itemconfig(menucanvasbg, image=frames[frame_index])
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
+    def main_rounded_rect(menucanvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
+        itemz = []
+        arc_kwargs = {"outline": color, "width": width}
+        line_kwargs = {"fill": color, "width": width}
+        itemz.append(menucanvas.create_arc(x1, y1, x1+2*r, y1+2*r, start=90, extent=90, style="arc", **arc_kwargs))
+        itemz.append(menucanvas.create_arc(x2-2*r, y1, x2, y1+2*r, start=0, extent=90, style="arc", **arc_kwargs))
+        itemz.append(menucanvas.create_arc(x1, y2-2*r, x1+2*r, y2, start=180, extent=90, style="arc", **arc_kwargs))
+        itemz.append(menucanvas.create_arc(x2-2*r, y2-2*r, x2, y2, start=270, extent=90, style="arc", **arc_kwargs))
+        itemz.append(menucanvas.create_line(x1+r, y1, x2-r, y1, **line_kwargs))
+        itemz.append(menucanvas.create_line(x1+r, y2, x2-r, y2, **line_kwargs))           
+        itemz.append(menucanvas.create_line(x1, y1+r, x1, y2-r, **line_kwargs))
+        itemz.append(menucanvas.create_line(x2, y1+r, x2, y2-r, **line_kwargs))
+        return items
     menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 27), fill='#968d8d')
     menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",27), fill='white')
     classicshdw= menucanvas.create_text(153, 463, text='CLASSIC', font=("Press Start 2P", 24), fill='#968d8d')

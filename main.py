@@ -33,13 +33,13 @@ def getpath(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 bottomafter = [None]
+canvas = Canvas(app, width=700, height=819, highlightthickness=0, bd=0, bg='black')
+canvas.place(x=0, y=0)
+canvasbg = canvas.create_image(0, 0, anchor='nw')
 def gifbg():
     global afterid
     if afterid:
         app.after_cancel(afterid)
-    app.update()
-    children = list(app.children.values())
-    parent = children[0] if children else app
     frames = []
     gif = Image.open(getpath("Assets/outlinebg.gif"))
     for frame in ImageSequence.Iterator(gif):
@@ -48,17 +48,12 @@ def gifbg():
         a = a.point(lambda x: x * 0.4)
         frame.putalpha(a)
         frames.append(ImageTk.PhotoImage(frame.resize((700, 700))))
-    canvas = Canvas(parent, width=700, height=819,highlightthickness=0, bd=0, bg='black')
-    canvas.place(x=0, y=0)
-    canvasbg = canvas.create_image(0, 0, anchor='nw')
-    canvas._frames = frames
+    canvas._outlineframes = frames
     def animate(frame_index=0):
         global afterid
         canvas.itemconfig(canvasbg, image=frames[frame_index])
-        afterid = app.after(35, animate, (frame_index + 1) % len(frames))  # change speed here when making menu thingy
+        afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
-    return canvas, canvasbg
-canvas, canvasbg = gifbg()
 def animatebottom():
     if 'bottombg' in canvas.__dict__:
         canvas.itemconfig(canvas._bottombg, image=bottombgframes[bottombgidx[0]])
@@ -87,6 +82,12 @@ loadinglabel = canvas.create_text(350, 620, text='Loading...', font=("Press Star
 loadingcountshdw = canvas.create_text(353, 153, text='Frames rendered: 0\n    out of 210', font=('Press Start 2P', 18), fill='#968d8d')
 loadingcount = canvas.create_text(350, 150, text='Frames rendered: 0\n    out of 210', font=("Press Start 2P", 18), fill='white' )
 canvas._loadingframes = loadingframes
+canvas.itemconfig(loadingimg, state='hidden')
+canvas.itemconfig(loadinglabel, state='hidden')
+canvas.itemconfig(loadinglabelshdw, state='hidden')
+canvas.itemconfig(loadingcount, state='hidden')
+canvas.itemconfig(loadingcountshdw, state='hidden')
+canvas.itemconfig(loadingbottom, state='hidden')
 loadingindx = [0]
 loadingafter = [None]
 loadingdone = threading.Event()
@@ -121,11 +122,10 @@ def rendercomplete():
     canvas.delete(loadingcount)
     canvas.delete(loadingcountshdw)
     canvas.delete(loadingbottom)
-    normal(canvas, canvasbg)
     newtarget()
     generation[0] += 1
     showcountdown(3, generation[0])
-threading.Thread(target=prerender, daemon=True).start()
+
 needle_angle = 0
 needledir = 1
 overlayitems = []
@@ -320,6 +320,7 @@ for frame in ImageSequence.Iterator(bottombg_gif):
 def normal(canvas, canvas_img):
     global needle, shadow
     clear(canvas, canvas_img)
+    gifbg()
     bottombg_img = canvas.create_image(0, 700, anchor='nw', image=bottombgframes[0])
     canvas._bottombg = bottombg_img
     canvas.__dict__['bottombg'] =True
@@ -363,4 +364,30 @@ def normal(canvas, canvas_img):
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
+def main(canvas_img_unused=None, canvasbg_unused=None):
+    global afterid
+    if afterid:
+        app.after_cancel(afterid)
+    frames = []
+    gif = Image.open(getpath("Assets/main.gif"))
+    for frame in ImageSequence.Iterator(gif):
+        frame = frame.copy().convert("RGBA")
+        r, g, b, a = frame.split()
+        a = a.point(lambda x: x * 0.4)
+        frame.putalpha(a)
+        frames.append(ImageTk.PhotoImage(frame.resize((700, 819))))
+    menucanvas = Canvas(app, width=700, height=819, highlightthickness=0, bd=0, bg='black')
+    menucanvas.place(x=0, y=0)
+    menucanvasbg = menucanvas.create_image(0, 0, anchor='nw')
+    menucanvas._frames = frames
+    def animate(frame_index=0):
+        global afterid
+        menucanvas.itemconfig(menucanvasbg, image=frames[frame_index])
+        afterid = app.after(35, animate, (frame_index + 1) % len(frames))
+    animate()
+
+
+
+
+main()
 app.mainloop()

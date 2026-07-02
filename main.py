@@ -114,6 +114,8 @@ animateloading()
 needle_frames = []
 shadow_frames = []
 def prerender():
+    needle_frames.clear()
+    shadow_frames.clear()
     for i in range(210):
         angle = i * (360 / 210)
         rotated = needle_img.rotate(-angle, resample=Image.BICUBIC, expand=False)
@@ -135,10 +137,10 @@ def rendercomplete():
     canvas.delete(loadingcount)
     canvas.delete(loadingcountshdw)
     canvas.delete(loadingbottom)
+    normal(canvas, canvasbg)
     newtarget()
     generation[0] += 1
     showcountdown(3, generation[0])
-
 needle_angle = 0
 needledir = 1
 overlayitems = []
@@ -163,8 +165,10 @@ def showgameover(penalty=True):
     box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
     titleshdw = canvas.create_text(353, y0+73, text='GAME OVER', font=("Press Start 2P", 24), fill='#968d8d')
     title = canvas.create_text(350, y0+70, text='GAME OVER', font=("Press Start 2P", 24), fill='white')
-    retryshdw = canvas.create_text(353, y0+143, text="RETRY", font=("Press Start 2P", 22), fill='#968d8d')
-    retry = canvas.create_text(350, y0+140, text='RETRY', font=("Press Start 2P", 22), fill='white')
+    retryshdw = canvas.create_text(313, y0+143, text="RETRY", font=("Press Start 2P", 20), fill='#968d8d')
+    retry = canvas.create_text(310, y0+140, text='RETRY', font=("Press Start 2P", 20), fill='white')
+    homeshdw = canvas.create_text(373, y0+143, text="HOME", font=("Press Start 2P", 20), fill="#968d8d")
+    home = canvas.create_text(370, y0+140, text='HOME', font=("Press Start 2P", 20), fill='white')
     overlayitems.extend([dim, box, title, titleshdw, retryshdw, retry])
     def restartent(e):
         canvas.itemconfig(retryshdw, fill="#1c1c1c")
@@ -395,6 +399,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
     menucanvas._frames = frames
     def animate(frame_index=0):
         global afterid
+        if not menucanvas.winfo_exists():
+            return
         menucanvas.itemconfig(menucanvasbg, image=frames[frame_index])
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
@@ -470,6 +476,39 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
         infoitems.clear()
     menucanvas.tag_bind(info, "<Button-1>", showinfo)
     menucanvas.tag_bind(infoshdw, "<Button-1>", showinfo)
+    def clickclassic(e=None):
+        for item in menucanvas.find_all():
+            if item != menucanvasbg:
+                menucanvas.delete(item)
+        main_rounded_rect(menucanvas, 30, 72, 230, 127, r=23, color="#968d8d", width=2)   
+        noobshdw = menucanvas.create_text(133, 103, text="NOOB", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
+        noob = menucanvas.create_text(130, 100, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
+        def noobent(e):
+            menucanvas.itemconfig(noobshdw, fill="#1c1c1c")
+            menucanvas.itemconfig(noob, fill="#968d8d")
+        def nooblev(e):
+            menucanvas.itemconfig(noob, fill='white')   
+            menucanvas.itemconfig(noobshdw, fill="#968d8d")
+        def startgame(e=None):
+            global afterid
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
+                canvas.itemconfig(item, state='normal')
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
+        menucanvas.tag_bind(noob, "<Enter>", noobent)
+        menucanvas.tag_bind(noob, "<Leave>", nooblev)
+        menucanvas.tag_bind(noobshdw, "<Leave>", nooblev)
+        menucanvas.tag_bind(noobshdw, "<Enter>", noobent)
+        menucanvas.tag_bind(noobshdw, "<Button-1>", startgame)
+        menucanvas.tag_bind(noob, "<Button-1>", startgame)
+    menucanvas.tag_bind(classic, "<Button-1>", clickclassic)
+    menucanvas.tag_bind(classicshdw, "<Button-1>", clickclassic)
+
+
 
 main()
 app.mainloop()

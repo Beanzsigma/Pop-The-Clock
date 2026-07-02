@@ -385,9 +385,44 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
         menucanvas.itemconfig(menucanvasbg, image=frames[frame_index])
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
-
-
-
+    menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 27), fill='#968d8d')
+    menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",27), fill='white')
+    classicshdw= menucanvas.create_text(153, 463, text='CLASSIC', font=("Press Start 2P", 24), fill='#968d8d')
+    classic = menucanvas.create_text(150, 460, text="CLASSIC", font=("Press Start 2P" ,24), fill='white')
+    specshdw= menucanvas.create_text(553, 463, text="SPECIAL", font=("Press Start 2P", 24), fill="#968d8d")
+    spec = menucanvas.create_text(550, 460, text='SPECIAL', font=("Press Start 2P", 24), fill='white')
+    infoshdw = menucanvas.create_text(596, 321, text="ⓘ", font=("Arial", 15), fill='#968d8d')
+    info = menucanvas.create_text(595, 319, text="ⓘ", font=("Arial", 15), fill='white')
+    def infoent(e):
+        menucanvas.itemconfig(info, fill="#968d8d")
+        menucanvas.itemconfig(infoshdw, fill="#1c1c1c")
+    def infolev(e):
+        menucanvas.itemconfig(infoshdw, fill='#968d8d')
+        menucanvas.itemconfig(info, fill='white')
+    menucanvas.tag_bind(info, "<Leave>", infolev)
+    menucanvas.tag_bind(infoshdw, "<Leave>", infolev)
+    menucanvas.tag_bind(info, "<Enter>", infoent)
+    menucanvas.tag_bind(infoshdw, "<Enter>", infoent)
+    def specent(e):
+        menucanvas.itemconfig(spec, fill='#968d8d')
+        menucanvas.itemconfig(specshdw, fill='#1c1c1c')
+    def speclev(e):
+        menucanvas.itemconfig(spec, fill="white")
+        menucanvas.itemconfig(specshdw, fill="#968d8d")
+    menucanvas.tag_bind(spec, "<Leave>", speclev)
+    menucanvas.tag_bind(specshdw, "<Leave>", speclev)
+    menucanvas.tag_bind(specshdw, "<Enter>", specent)
+    menucanvas.tag_bind(spec, "<Enter>", specent)
+    def classicent(e):
+        menucanvas.itemconfig(classic, fill="#968d8d")
+        menucanvas.itemconfig(classicshdw, fill="#1c1c1c")
+    def classiclev(e):
+        menucanvas.itemconfig(classic, fill='white')
+        menucanvas.itemconfig(classicshdw, fill='#968d8d')
+    menucanvas.tag_bind(classic, "<Enter>", classicent)
+    menucanvas.tag_bind(classicshdw, "<Enter>", classicent)
+    menucanvas.tag_bind(classic, "<Leave>", classiclev)
+    menucanvas.tag_bind(classicshdw, "<Leave>", classiclev)
 
 main()
 app.mainloop()

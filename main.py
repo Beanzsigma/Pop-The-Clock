@@ -517,9 +517,30 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         for item in menucanvas.find_all():
             if item != menucanvasbg:
                 menucanvas.delete(item)
-        main_rounded_rect(menucanvas, 30, 72, 230, 127, r=23, color="#968d8d", width=2)   
-        noobshdw = menucanvas.create_text(133, 103, text="NOOB", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
-        noob = menucanvas.create_text(130, 100, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
+        backshdw = menucanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
+        back = menucanvas.create_text(40, 40, text="←", font=("Arial", 39), fill='white')
+        def backent(e):
+            menucanvas.itemconfig(backshdw, fill="#1c1c1c")
+            menucanvas.itemconfig(back, fill='#968d8d')
+        def backlev(e):
+            menucanvas.itemconfig(back, fill='white')
+            menucanvas.itemconfig(backshdw, fill="#968d8d")
+        def goback(e=None):
+            global afterid
+            if afterid:
+                app.after_cancel(afterid)
+                afterid =None
+            menucanvas.destroy()
+            main()
+        menucanvas.tag_bind(back, "<Enter>", backent)
+        menucanvas.tag_bind(backshdw, "<Enter>", backent)
+        menucanvas.tag_bind(backshdw, "<Leave>", backlev)
+        menucanvas.tag_bind(back, "<Leave>", backlev)
+        menucanvas.tag_bind(back, "<Button-1>", goback)
+        menucanvas.tag_bind(backshdw, "<Button-1>", goback)
+        main_rounded_rect(menucanvas, 30, 102, 230, 157, r=23, color="#968d8d", width=2)   
+        noobshdw = menucanvas.create_text(133, 133, text="NOOB", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
+        noob = menucanvas.create_text(130, 130, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
         def noobent(e):
             menucanvas.itemconfig(noobshdw, fill="#1c1c1c")
             menucanvas.itemconfig(noob, fill="#968d8d")

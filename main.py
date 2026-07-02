@@ -165,11 +165,11 @@ def showgameover(penalty=True):
     box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
     titleshdw = canvas.create_text(353, y0+73, text='GAME OVER', font=("Press Start 2P", 24), fill='#968d8d')
     title = canvas.create_text(350, y0+70, text='GAME OVER', font=("Press Start 2P", 24), fill='white')
-    retryshdw = canvas.create_text(313, y0+143, text="RETRY", font=("Press Start 2P", 20), fill='#968d8d')
-    retry = canvas.create_text(310, y0+140, text='RETRY', font=("Press Start 2P", 20), fill='white')
-    homeshdw = canvas.create_text(373, y0+143, text="HOME", font=("Press Start 2P", 20), fill="#968d8d")
-    home = canvas.create_text(370, y0+140, text='HOME', font=("Press Start 2P", 20), fill='white')
-    overlayitems.extend([dim, box, title, titleshdw, retryshdw, retry])
+    retryshdw = canvas.create_text(268, y0+143, text="RETRY", font=("Press Start 2P", 18), fill='#968d8d')
+    retry = canvas.create_text(265, y0+140, text='RETRY', font=("Press Start 2P", 18), fill='white')
+    homeshdw = canvas.create_text(438, y0+143, text="HOME", font=("Press Start 2P", 18), fill="#968d8d")
+    home = canvas.create_text(435, y0+140, text='HOME', font=("Press Start 2P", 18), fill='white')
+    overlayitems.extend([dim, box, title, titleshdw, retryshdw, retry, homeshdw, home])
     def restartent(e):
         canvas.itemconfig(retryshdw, fill="#1c1c1c")
         canvas.itemconfig(retry, fill="#968d8d")
@@ -182,6 +182,18 @@ def showgameover(penalty=True):
     canvas.tag_bind(retry, "<Enter>", restartent)
     canvas.tag_bind(retry, "<Button-1>", restartgame)
     canvas.tag_bind(retryshdw, "<Button-1>", restartgame)
+    def homeent(e):
+        canvas.itemconfig(homeshdw, fill="#1c1c1c")
+        canvas.itemconfig(home, fill="#968d8d")
+    def homelev(e):
+        canvas.itemconfig(homeshdw, fill="#968d8d")
+        canvas.itemconfig(home, fill='white')
+    canvas.tag_bind(home, "<Leave>", homelev)
+    canvas.tag_bind(homeshdw, "<Leave>", homelev)
+    canvas.tag_bind(home, "<Enter>", homeent)
+    canvas.tag_bind(homeshdw, "<Enter>",homeent)
+    canvas.tag_bind(home, "<Button-1>", gohome)
+    canvas.tag_bind(homeshdw, "<Button-1>", gohome)
 def restartgame(e=None):
     global needle_angle, needledir
     for item in overlayitems:
@@ -197,6 +209,31 @@ def restartgame(e=None):
     newtarget()
     generation[0] += 1
     showcountdown(3, generation[0])
+def gohome(e=None):
+    global needle_angle, needledir, afterid
+    for item in overlayitems:
+        canvas.delete(item)
+    overlayitems.clear()
+    generation[0] += 1
+    gameover[0] = True
+    inputlocked[0] = True
+    if bottomafter[0]:
+        app.after_cancel(bottomafter[0])
+        bottomafter[0] = None
+    if afterid:
+        app.after_cancel(afterid)
+        afterid = None
+    clear(canvas, canvasbg)
+    canvas.itemconfig(canvasbg, image='')
+    numhigh.clear()
+    fading.clear()
+    lasthigh[0] = None
+    targetnumber[0] = None
+    firstpick[0] = True
+    needle_angle = 0
+    needledir = 1
+    clockminutes[0] = 30
+    main(straight_to_noob=True)
 countdownitems = []
 clocktextids = {}
 def updateclock():
@@ -381,7 +418,7 @@ def normal(canvas, canvas_img):
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
-def main(canvas_img_unused=None, canvasbg_unused=None):
+def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     global afterid
     if afterid:
         app.after_cancel(afterid)
@@ -507,6 +544,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None):
         menucanvas.tag_bind(noob, "<Button-1>", startgame)
     menucanvas.tag_bind(classic, "<Button-1>", clickclassic)
     menucanvas.tag_bind(classicshdw, "<Button-1>", clickclassic)
+    if straight_to_noob:
+        clickclassic()
 
 
 

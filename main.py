@@ -144,6 +144,8 @@ def rendercomplete():
     canvas.itemconfig(loadingcount, state='hidden')
     canvas.itemconfig(loadingcountshdw, state='hidden')
     canvas.itemconfig(loadingbottom, state='hidden')
+    gameover[0] = False
+    inputlocked[0] = True
     clockminutes[0] = startclock[0]
     normal(canvas, canvasbg)
     newtarget()
@@ -441,7 +443,7 @@ def normal(canvas, canvas_img):
     canvas.create_image(350, 702, anchor='center', image=sepimg)
     canvas._sepimg = sepimg
     canvas._needle = needle_frames[0]
-    shadow = canvas.create_image(354, 354, anchor='center', image=needle_frames[0])
+    shadow = canvas.create_image(354, 354, anchor='center', image=shadow_frames[0])
     canvas._shadow = shadow_frames[0]
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)

@@ -6,6 +6,7 @@ clockminutes = [30]
 generation = [0]
 passedtarget = [False]
 needle_on_target = [False]
+needlespeed = [1]
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
@@ -297,7 +298,7 @@ def rotate_needle(gen=None):
         return
     if gameover[0]:
         return
-    needle_angle = (needle_angle + 1 * needledir) % 210
+    needle_angle = (needle_angle + needlespeed[0] * needledir) % 210
     canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
     canvas._shadow = shadow_frames[needle_angle]
     canvas.itemconfig(needle, image=needle_frames[needle_angle])
@@ -581,6 +582,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             global afterid
             instantlose[0] = False
             startclock[0] = 30
+            needlespeed[0] = 1
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
@@ -613,6 +615,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             global afterid
             instantlose[0] = True
             startclock[0] = 0
+            needlespeed[0] = 1
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
@@ -632,6 +635,39 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(proshdw, "<Leave>", prolev)
         menucanvas.tag_bind(pro, "<Button-1>", startpro)
         menucanvas.tag_bind(proshdw, "<Button-1>", startpro)
+        main_rounded_rect(menucanvas, 4, 252, 293, 306, r=23, color="#968d8d", width=2)
+        hackershdw = menucanvas.create_text(153, 283, text="HACKER", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        hacker = menucanvas.create_text(150,280, text='HACKER', font=("Press Start 2P", 33), fill='white', anchor='center' )
+        def hackerent(e):
+            menucanvas.itemconfig(hackershdw, fill="#1c1c1c")
+            menucanvas.itemconfig(hacker,fill='#968d8d')
+        def hackerlev(e):
+            menucanvas.itemconfig(hackershdw, fill='#968d8d')
+            menucanvas.itemconfig(hacker, fill='white')
+        def starthacker(e=None):
+            global afterid
+            instantlose[0] = True
+            startclock[0] = 0
+            needlespeed[0] = 2 
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
+                canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
+        menucanvas.tag_bind(hacker, "<Leave>", hackerlev)
+        menucanvas.tag_bind(hackershdw, "<Leave>", hackerlev)
+        menucanvas.tag_bind(hacker, "<Enter>", hackerent)
+        menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
+        menucanvas.tag_bind(hacker, "<Button-1>", starthacker)
+        menucanvas.tag_bind(hackershdw, "<Button-1>", starthacker)
     menucanvas.tag_bind(classic, "<Button-1>", clickclassic)
     menucanvas.tag_bind(classicshdw, "<Button-1>", clickclassic)
     if straight_to_noob:

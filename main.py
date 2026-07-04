@@ -668,6 +668,39 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
         menucanvas.tag_bind(hacker, "<Button-1>", starthacker)
         menucanvas.tag_bind(hackershdw, "<Button-1>", starthacker)
+        main_rounded_rect(menucanvas, 4, 327, 293, 381, r=23, color="#968d8d",width=2 )
+        godmodeshdw = menucanvas.create_text(153, 358, text="GOD", font=("Press Start 2P", 33),fill='#968d8d', anchor='center')
+        godmode = menucanvas.create_text(150, 355, text="GOD", font=("Press Start 2P", 33), fill='white', anchor='center')
+        def godent(e):
+            menucanvas.itemconfig(godmodeshdw, fill='#1c1c1c')
+            menucanvas.itemconfig(godmode, fill='#968d8d')
+        def godlev(e):
+            menucanvas.itemconfig(godmode, fill="white")
+            menucanvas.itemconfig(godmodeshdw, fill='#968d8d')
+        def startgod(e=None):
+            global afterid
+            instantlose[0] = True
+            startclock[0] = 0
+            needlespeed[0] = 4
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw,loadingcount, loadingcountshdw, loadingbottom ):
+                canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
+        menucanvas.tag_bind(godmode, "<Leave>", godlev)
+        menucanvas.tag_bind(godmodeshdw, "<Leave>", godlev)
+        menucanvas.tag_bind(godmode, "<Enter>", godent)
+        menucanvas.tag_bind(godmodeshdw, "<Enter>", godent)
+        menucanvas.tag_bind(godmodeshdw, "<Button-1>", startgod)
+        menucanvas.tag_bind(godmode, "<Button-1>", startgod)
     menucanvas.tag_bind(classic, "<Button-1>", clickclassic)
     menucanvas.tag_bind(classicshdw, "<Button-1>", clickclassic)
     if straight_to_noob:

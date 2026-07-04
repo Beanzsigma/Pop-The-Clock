@@ -365,6 +365,56 @@ def highlightnumb(gen=None):
         lasthigh[0] = number
     highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
 fading = {}
+def showwin():
+    gameover[0] = True
+    inputlocked[0] = True
+    dimimg = Image.new("RGBA", (700, 818), (0, 0, 0, 140))
+    dimphoto = ImageTk.PhotoImage(dimimg)
+    dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
+    canvas._windimphoto = dimphoto
+    winframes = []
+    wingif = Image.open(getpath("Assets/main.gif"))
+    for frame in ImageSequence.Iterator(wingif):
+        frame = frame.copy().convert("RGBA")
+        r, g, b, a = frame.split()
+        a = a.point(lambda x: x*0.6)
+        frame.putalpha(a)
+        winframes.append(ImageTk.PhotoImage(frame.resize((700, 930))))
+    wincanvas = Canvas(app, width=700, height=930, highlightthickness=0, bd=0, bg='black')
+    wincanvas.place(x=0, y=0)
+    wincanvasbg = wincanvas.create_image(0, 0, anchor='nw')
+    wincanvas._winframes = winframes
+    winafterid = [None]
+    def animatewin(frame_index=0):
+        if not wincanvas.winfo_exists():
+            return
+        wincanvas.itemconfig(wincanvasbg, image=winframes[frame_index] )
+        winafterid[0] = app.after(35, animatewin, (frame_index+1) %len(winframes))
+    animatewin()
+    backshdw = wincanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
+    back = wincanvas.create_text(40, 40, text="←", font=("Arial", 39), fill='white')
+    def backent(e):
+        wincanvas.itemconfig(back, fill='#968d8d')
+        wincanvas.itemconfig(backshdw, fill="#1c1c1c")
+    def backlev(e):
+        wincanvas.itemconfig(back, fill="white")
+        wincanvas.itemconfig(backshdw, fill='#968d8d')
+    def goback(e=None):
+        if winafterid[0]:
+            app.after_cancel(winafterid[0])
+        wincanvas.destroy()
+        gameover[0] = False
+        generation[0] += 1
+        gohome()
+    wincanvas.tag_bind(back, "<Enter>", backent)
+    wincanvas.tag_bind(backshdw, "<Enter>", backent)
+    wincanvas.tag_bind(back, "<Leave>", backlev)
+    wincanvas.tag_bind(backshdw, "<Leave>", backlev)
+    wincanvas.tag_bind(back, "<Button-1>", goback)
+    wincanvas.tag_bind(backshdw, "<Button-1>", goback)
+    wincanvas.create_text(371, 371, text='Dissapointing... \n You beat the \n easiest level. \n Now go on \n and try PRO', fill="#968d8d", font=("Press Start 2P", 17), anchor='center')
+    wincanvas.create_text(368, 368, text='Dissapointing... \n You beat the \n easiest level. \n Now go on \n and try PRO', font=("Press Start 2P", 17), fill='white', anchor='center')
+    
 def numberclick(number):
     if number not in numhigh:
         return
@@ -375,7 +425,7 @@ def numberclick(number):
     lasthigh[0] = None
     needle_on_target[0] = False
     if clockminutes[0] >= 60:
-        pass
+        showwin()
 def execfade(number):
     if number not in fading:
         return

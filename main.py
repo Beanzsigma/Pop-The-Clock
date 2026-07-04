@@ -668,9 +668,9 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
         menucanvas.tag_bind(hacker, "<Button-1>", starthacker)
         menucanvas.tag_bind(hackershdw, "<Button-1>", starthacker)
-        main_rounded_rect(menucanvas, 4, 327, 293, 381, r=23, color="#968d8d",width=2 )
-        godmodeshdw = menucanvas.create_text(153, 358, text="GOD", font=("Press Start 2P", 33),fill='#968d8d', anchor='center')
-        godmode = menucanvas.create_text(150, 355, text="GOD", font=("Press Start 2P", 33), fill='white', anchor='center')
+        main_rounded_rect(menucanvas, 34, 327, 223, 381, r=23, color="#968d8d",width=2 )
+        godmodeshdw = menucanvas.create_text(133, 358, text="GOD", font=("Press Start 2P", 33),fill='#968d8d', anchor='center')
+        godmode = menucanvas.create_text(133, 355, text="GOD", font=("Press Start 2P", 33), fill='white', anchor='center')
         def godent(e):
             menucanvas.itemconfig(godmodeshdw, fill='#1c1c1c')
             menucanvas.itemconfig(godmode, fill='#968d8d')

@@ -329,7 +329,8 @@ def newtarget():
         choices = [n for n in numhigh if n != targetnumber[0] and n not in (2, 3, 4, 5)]
         firstpick[0] = False
     else:
-        choices = [n for n in numhigh if n != targetnumber[0]]
+        prev = targetnumber[0]
+        choices = [n for n in numhigh if n != prev and (abs(n - prev) >= 3 or abs(n - prev) >= 9)]
     targetnumber[0] = random.choice(choices)
     canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
 def highlightnumb(gen=None):
@@ -572,6 +573,24 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         return itemz
     main_rounded_rect(menucanvas, 20, 430, 283, 490, r=23, color="#968d8d", width=2)
     main_rounded_rect(menucanvas, 425, 430, 670, 490, r=23, color="#968d8d", width=2)
+    badgeshdw = menucanvas.create_text(643, 58, text='✪', fill='#968d8d', font=("Arial", 44))
+    badge = menucanvas.create_text(640, 55, text="✪", fill='white', font=("Arial", 44))
+    def badgescreen(e=None):
+        for item in menucanvas.find_all():
+            if item!= menucanvasbg:
+                menucanvas.delete(item)
+    def badgeent(e):
+        menucanvas.itemconfig(badge, fill='#968d8d')
+        menucanvas.itemconfig(badgeshdw, fill='#1c1c1c')
+    def badgelev(e):
+        menucanvas.itemconfig(badge, fill='white')
+        menucanvas.itemconfig(badgeshdw, fill='#968d8d')
+    menucanvas.tag_bind(badge, "<Enter>", badgeent)
+    menucanvas.tag_bind(badge, "<Leave>", badgelev)
+    menucanvas.tag_bind(badgeshdw, "<Enter>", badgeent)
+    menucanvas.tag_bind(badgeshdw, "<Leave>", badgelev)
+    menucanvas.tag_bind(badgeshdw, "<Button-1>", badgescreen)
+    menucanvas.tag_bind(badge, "<Button-1>", badgescreen)
     menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 32), fill='#968d8d')
     menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",32), fill='white')
     classicshdw= menucanvas.create_text(153, 463, text='CLASSIC', font=("Press Start 2P", 24), fill='#968d8d')
@@ -791,7 +810,5 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     if straight_to_noob:
         clickclassic()
 
-
-app.after(100, showwin)
 main()
 app.mainloop()

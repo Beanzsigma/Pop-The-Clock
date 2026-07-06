@@ -7,6 +7,7 @@ generation = [0]
 passedtarget = [False]
 needle_on_target = [False]
 needlespeed = [1]
+equiped = [0]
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
@@ -365,7 +366,7 @@ def highlightnumb(gen=None):
         lasthigh[0] = number
     highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
 fading = {}
-def showwin():
+def showwin():   
     gameover[0] = True
     inputlocked[0] = True
     dimimg = Image.new("RGBA", (700, 818), (0, 0, 0, 140))
@@ -412,9 +413,43 @@ def showwin():
     wincanvas.tag_bind(backshdw, "<Leave>", backlev)
     wincanvas.tag_bind(back, "<Button-1>", goback)
     wincanvas.tag_bind(backshdw, "<Button-1>", goback)
-    wincanvas.create_text(371, 371, text='Dissapointing... \n You beat the \n easiest level. \n Now go on \n and try PRO', fill="#968d8d", font=("Press Start 2P", 17), anchor='center')
-    wincanvas.create_text(368, 368, text='Dissapointing... \n You beat the \n easiest level. \n Now go on \n and try PRO', font=("Press Start 2P", 17), fill='white', anchor='center')
-    
+    wincanvas.create_text(381, 181, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    wincanvas.create_text(378, 178, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill='white', anchor='center')
+    wincanvas.create_text(353, 368, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='#968d8d', anchor='center')
+    wincanvas.create_text(350, 365, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='white', anchor='center')
+    noviceimg = Image.open("Assets/novice.png")
+    imgnovice = ImageTk.PhotoImage(noviceimg)
+    wincanvas._noviceimg = imgnovice
+    wincanvas.create_image(350, 555, anchor='center', image=imgnovice)
+    rounded_rect(wincanvas, 60, 320, 640, 695, r=23,color="#968d8d", width=2 )
+    equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#914949")
+    equip= wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill="#CB5757")
+    equiped[0] = 0
+    def eqbutton(e):
+        if equiped[0] == 0:
+            equiped[0] = 1
+        else:
+            equiped[0] = 0
+    def eqent(e):
+        if equiped[0] == 0:
+            wincanvas.itemconfig(equip, fill="#2C1B1B")
+            wincanvas.itemconfig(equipshdw, fill="#4c2c2c")
+        elif equiped[0] == 1:
+            wincanvas.itemconfig(equip, fill='#426343')
+            wincanvas.itemconfig(equipshdw, fill="#132014")
+    def eqlev(e):
+        if equiped[0] == 0:
+            wincanvas.itemconfig(equip, fill='#CB5757')
+            wincanvas.itemconfig(equipshdw, fill='#914949')
+        elif equiped[0] == 1:
+            wincanvas.itemconfig(equip, fill="#74d172")
+            wincanvas.itemconfig(equipshdw, fill="#426343")
+    wincanvas.tag_bind(equip, "<Enter>",eqent )
+    wincanvas.tag_bind(equipshdw, "<Enter>", eqent)
+    wincanvas.tag_bind(equip, "<Leave>", eqlev)
+    wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
+    wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
+    wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
 def numberclick(number):
     if number not in numhigh:
         return
@@ -757,6 +792,6 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         clickclassic()
 
 
-
+app.after(100, showwin)
 main()
 app.mainloop()

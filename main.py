@@ -579,6 +579,29 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         for item in menucanvas.find_all():
             if item!= menucanvasbg:
                 menucanvas.delete(item)
+        menucanvas.create_text(353, 33, text="BADGES", fill='#968d8d', font=("Press Start 2P", 30))
+        menucanvas.create_text(350,30, text='BADGES', fill='white', font=("Press Start 2P", 30))
+        badgebckshdw = menucanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
+        badgebck = menucanvas.create_text(39, 38, text="←", font=("Arial", 39), fill='white')
+        def bbckent(e):
+            menucanvas.itemconfig(badgebck, fill='#968d8d')
+            menucanvas.itemconfig(badgebckshdw, fill='#1c1c1c')
+        def bbcklev(e):
+            menucanvas.itemconfig(badgebckshdw, fill='#968d8d')
+            menucanvas.itemconfig(badgebck, fill="white")
+        def goback(e=None):
+            global afterid
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            menucanvas.destroy()
+            main()
+        menucanvas.tag_bind(badgebck, "<Enter>", bbckent)
+        menucanvas.tag_bind(badgebckshdw, "<Enter>", bbckent)
+        menucanvas.tag_bind(badgebckshdw, "<Leave>", bbcklev)
+        menucanvas.tag_bind(badgebck, "<Leave>", bbcklev)
+        menucanvas.tag_bind(badgebck, "<Button-1>", goback)
+        menucanvas.tag_bind(badgebckshdw, "<Button-1>", goback)
     def badgeent(e):
         menucanvas.itemconfig(badge, fill='#968d8d')
         menucanvas.itemconfig(badgeshdw, fill='#1c1c1c')

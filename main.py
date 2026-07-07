@@ -583,6 +583,22 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.create_text(350,30, text='BADGES', fill='white', font=("Press Start 2P", 30))
         badgebckshdw = menucanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
         badgebck = menucanvas.create_text(39, 38, text="←", font=("Arial", 39), fill='white')
+        noviceimg = Image.open("Assets/novice.png")
+        imgnovice = ImageTk.PhotoImage(noviceimg)
+        menucanvas._noviceimg = imgnovice
+        menucanvas.create_image(150, 200, anchor='center', image=imgnovice)
+        proimg = Image.open("Assets/pro.png").resize((1100, 700))
+        imgpro = ImageTk.PhotoImage(proimg)
+        menucanvas._proimg = imgpro
+        menucanvas.create_image(240, 330, anchor='center', image=imgpro)
+        hackerimg = Image.open("Assets/hacker.png")
+        imghacker = ImageTk.PhotoImage(hackerimg)
+        menucanvas._hackerimg = imghacker
+        menucanvas.create_image(150, 560, anchor='center', image=imghacker)
+        godimg = Image.open('Assets/god.png').resize((300, 200))
+        imggod = ImageTk.PhotoImage(godimg)
+        menucanvas._godimg = imggod
+        menucanvas.create_image(520, 540, anchor='center', image=imggod)
         def bbckent(e):
             menucanvas.itemconfig(badgebck, fill='#968d8d')
             menucanvas.itemconfig(badgebckshdw, fill='#1c1c1c')

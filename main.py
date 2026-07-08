@@ -23,7 +23,7 @@ needleafter = [None]
 highlightafter = [None]
 afterid = None
 badgesearned = {"novice": False, 'pro': False, 'hacker': False, 'god': False}
-badgesearned = {'novice': False, 'pro': False, "hacker": False, 'god': False}
+badgesequipped = {'novice': False, 'pro': False, 'hacker': False, 'god': False}
 app = ctk.CTk()
 app.title("Pop The Clock!")
 app.geometry("700x819")
@@ -605,6 +605,36 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         imggod = ImageTk.PhotoImage(godimg)
         menucanvas._godimg = imggod
         menucanvas.create_image(520, 540, anchor='center', image=imggod)
+        def makeequip(c, badge_name, textshdw, text):
+            earned = badgesearned[badge_name]
+            equipped = badgesequipped[badge_name]
+            if not earned:
+                c.itemconfig(text, fill='#555555')
+                c.itemconfig(textshdw, fill='#333333')
+                return
+            if equipped:
+                c.itemconfig(text, fill='#74d172')
+                c.itemconfig(textshdw, fill='#426343')
+            else:
+                c.itemconfig(text, fill='white')
+                c.itemconfig(textshdw, fill='#968d8d')
+            def onclick(e, bn=badge_name, t=text, ts=textshdw):
+                badgesequipped[bn] = not badgesequipped[bn]
+                makeequip(c, bn, ts, t)
+            c.tag_bind(text, "<Button-1>", onclick)
+            c.tag_bind(textshdw, "<Button-1>", onclick)
+        equipnoviceshdw = menucanvas.create_text(153, 403, text="EQUIP", fill='#968d8d', font=("Press Start 2P", 23))
+        equipnovice = menucanvas.create_text(150, 400, text='EQUIP', fill='white', font=("Press Start 2P", 23))
+        equipproshdw= menucanvas.create_text(551, 403, text="EQUIP", fill='#968d8d', font=("Press Start 2P", 23))
+        equippro = menucanvas.create_text(548, 400, text='EQUIP', fill='white', font=("Press Start 2P", 23))
+        equiphackershdw = menucanvas.create_text(153, 703, text='EQUIP', fill="#968d8d", font=("Press Start 2P", 23))
+        equiphacker = menucanvas.create_text(150, 700, text='EQUIP', fill='white', font=("Press Start 2P", 23))
+        equipgodshdw = menucanvas.create_text(524, 703, text="EQUIP", font=("Press Start 2P", 23), fill='#968d8d')
+        equipgod = menucanvas.create_text(521, 700, text="EQUIP", fill='white', font=("Press Start 2P", 23))
+        makeequip(menucanvas, 'novice', equipnoviceshdw, equipnovice)
+        makeequip(menucanvas, 'pro', equipproshdw, equippro)
+        makeequip(menucanvas, 'hacker', equiphackershdw, equiphacker)
+        makeequip(menucanvas, 'god', equipgodshdw, equipgod)
         def bbckent(e):
             menucanvas.itemconfig(badgebck, fill='#968d8d')
             menucanvas.itemconfig(badgebckshdw, fill='#1c1c1c')
@@ -632,14 +662,6 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.create_text(150, 650, text='HACKER', fill='white', font=("Press Start 2P", 10))
         menucanvas.create_text(523, 652, text='GOD', font=("Press Start 2P", 10), fill='#968d8d')
         menucanvas.create_text(521, 650, text='GOD', font=("Press Start 2P", 10), fill='white')
-        equipnoviceshdw = menucanvas.create_text(153, 403, text="EQUIP", fill='#968d8d', font=("Press Start 2P", 23))
-        equipnovice = menucanvas.create_text(150, 400, text='EQUIP', fill='white', font=("Press Start 2P", 23))
-        equipproshdw= menucanvas.create_text(551, 403, text="EQUIP", fill='#968d8d', font=("Press Start 2P", 23))
-        equippro = menucanvas.create_text(548, 400, text='EQUIP', fill='white', font=("Press Start 2P", 23))
-        equiphackershdw = menucanvas.create_text(153, 703, text='EQUIP', fill="#968d8d", font=("Press Start 2P", 23))
-        equiphacker = menucanvas.create_text(150, 700, text='EQUIP', fill='white', font=("Press Start 2P", 23))
-        equipgodshdw = menucanvas.create_text(524, 703, text="EQUIP", font=("Press Start 2P", 23), fill='#968d8d')
-        equipgod = menucanvas.create_text(521, 700, text="EQUIP", fill='white', font=("Press Start 2P", 23))
     def badgeent(e):
         menucanvas.itemconfig(badge, fill='#968d8d')
         menucanvas.itemconfig(badgeshdw, fill='#1c1c1c')

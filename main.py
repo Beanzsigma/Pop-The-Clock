@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import Canvas
+from tkinter import *
 import random
 targetnumber = [None]
 clockminutes = [30]
@@ -21,6 +22,8 @@ startclock = [30]
 needleafter = [None]
 highlightafter = [None]
 afterid = None
+badgesearned = {"novice": False, 'pro': False, 'hacker': False, 'god': False}
+badgesearned = {'novice': False, 'pro': False, "hacker": False, 'god': False}
 app = ctk.CTk()
 app.title("Pop The Clock!")
 app.geometry("700x819")
@@ -369,6 +372,7 @@ def highlightnumb(gen=None):
 fading = {}
 def showwin():   
     gameover[0] = True
+    badgesearned['novice'] = True
     inputlocked[0] = True
     dimimg = Image.new("RGBA", (700, 818), (0, 0, 0, 140))
     dimphoto = ImageTk.PhotoImage(dimimg)
@@ -581,16 +585,18 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
                 menucanvas.delete(item)
         menucanvas.create_text(353, 33, text="BADGES", fill='#968d8d', font=("Press Start 2P", 30))
         menucanvas.create_text(350,30, text='BADGES', fill='white', font=("Press Start 2P", 30))
-        badgebckshdw = menucanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
-        badgebck = menucanvas.create_text(39, 38, text="←", font=("Arial", 39), fill='white')
+        badgebckshdw = menucanvas.create_text(40, 12, text="←", font=("Arial", 39), fill="#968d8d")
+        badgebck = menucanvas.create_text(38, 9, text="←", font=("Arial", 39), fill='white')
         noviceimg = Image.open("Assets/novice.png")
         imgnovice = ImageTk.PhotoImage(noviceimg)
         menucanvas._noviceimg = imgnovice
         menucanvas.create_image(150, 200, anchor='center', image=imgnovice)
-        proimg = Image.open("Assets/pro.png").resize((1100, 700))
-        imgpro = ImageTk.PhotoImage(proimg)
+        orginalpro = Image.open("Assets/pro.png")
+        width, height = orginalpro.size
+        scaledimg = orginalpro.resize((int(width * 1.1), int(height * 1.1)), Image.Resampling.LANCZOS)
+        imgpro = ImageTk.PhotoImage(scaledimg)
         menucanvas._proimg = imgpro
-        menucanvas.create_image(240, 330, anchor='center', image=imgpro)
+        menucanvas.create_image(538, 205, anchor='center', image=imgpro)
         hackerimg = Image.open("Assets/hacker.png")
         imghacker = ImageTk.PhotoImage(hackerimg)
         menucanvas._hackerimg = imghacker
@@ -620,8 +626,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(badgebckshdw, "<Button-1>", goback)
         menucanvas.create_text(152, 352, text="NOVICE", fill='#968d8d', font=("Press Start 2P", 10))
         menucanvas.create_text(150, 350, text="NOVICE", fill='white', font=("Press Start 2P", 10))
-        menucanvas.create_text(550, 352, text="PRO", fill='#968d8d', font=("Press Start 2P",10))
-        menucanvas.create_text(548, 350, text="PRO", fill='white', font=("Press Start 2P", 10))
+        menucanvas.create_text(545, 352, text="PRO", fill='#968d8d', font=("Press Start 2P",10))
+        menucanvas.create_text(543, 350, text="PRO", fill='white', font=("Press Start 2P", 10))
         menucanvas.create_text(152, 652, text='HACKER', fill='#968d8d', font=("Press Start 2P", 10))
         menucanvas.create_text(150, 650, text='HACKER', fill='white', font=("Press Start 2P", 10))
         menucanvas.create_text(523, 652, text='GOD', font=("Press Start 2P", 10), fill='#968d8d')

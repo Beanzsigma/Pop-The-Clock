@@ -411,6 +411,7 @@ def showwin():
         wincanvas.destroy()
         gameover[0] = False
         generation[0] += 1
+        needlespeed[0] = 1
         gohome()
     wincanvas.tag_bind(back, "<Enter>", backent)
     wincanvas.tag_bind(backshdw, "<Enter>", backent)
@@ -427,28 +428,28 @@ def showwin():
     wincanvas._noviceimg = imgnovice
     wincanvas.create_image(350, 555, anchor='center', image=imgnovice)
     rounded_rect(wincanvas, 60, 320, 640, 695, r=23,color="#968d8d", width=2 )
-    equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#914949")
-    equip= wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill="#CB5757")
-    equiped[0] = 0
-    def eqbutton(e):
-        if equiped[0] == 0:
-            equiped[0] = 1
+    equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d")
+    equip= wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill='white')
+    def refresheqdis():
+        if badgesequipped['novice']:
+            wincanvas.itemconfig(equip, fill='#74d172')
+            wincanvas.itemconfig(equipshdw, fill='#426343')
         else:
-            equiped[0] = 0
+            wincanvas.itemconfig(equip, fill='white')
+            wincanvas.itemconfig(equipshdw, fill='#968d8d') 
+    refresheqdis()
+    def eqbutton(e=None):
+        badgesequipped['novice'] = not badgesequipped['novice']
+        refresheqdis()
     def eqent(e):
-        if equiped[0] == 0:
-            wincanvas.itemconfig(equip, fill="#2C1B1B")
-            wincanvas.itemconfig(equipshdw, fill="#4c2c2c")
-        elif equiped[0] == 1:
+        if badgesequipped['novice']:
             wincanvas.itemconfig(equip, fill='#426343')
-            wincanvas.itemconfig(equipshdw, fill="#132014")
+            wincanvas.itemconfig(equipshdw, fill='#132014')
+        else:
+            wincanvas.itemconfig(equip, fill='#968d8d')
+            wincanvas.itemconfig(equipshdw, fill='#1c1c1c')
     def eqlev(e):
-        if equiped[0] == 0:
-            wincanvas.itemconfig(equip, fill='#CB5757')
-            wincanvas.itemconfig(equipshdw, fill='#914949')
-        elif equiped[0] == 1:
-            wincanvas.itemconfig(equip, fill="#74d172")
-            wincanvas.itemconfig(equipshdw, fill="#426343")
+        refresheqdis()
     wincanvas.tag_bind(equip, "<Enter>",eqent )
     wincanvas.tag_bind(equipshdw, "<Enter>", eqent)
     wincanvas.tag_bind(equip, "<Leave>", eqlev)
@@ -621,6 +622,28 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             def onclick(e, bn=badge_name, t=text, ts=textshdw):
                 badgesequipped[bn] = not badgesequipped[bn]
                 makeequip(c, bn, ts, t)
+            def onenter(e, bn=badge_name, t=text, ts=textshdw):
+                if not badgesearned[bn]:
+                    return
+                if badgesequipped[bn]:
+                    c.itemconfig(t, fill='#426343')
+                    c.itemconfig(ts, fill='#132014')
+                else:
+                    c.itemconfig(t, fill='#968d8d')
+                    c.itemconfig(ts, fill='#1c1c1c')
+            def onleave(e, bn=badge_name, t=text, ts=textshdw):
+                if not badgesearned[bn]:
+                    return
+                if badgesequipped[bn]:
+                    c.itemconfig(t, fill='#74d172')
+                    c.itemconfig(ts, fill='#426343')
+                else:
+                    c.itemconfig(t, fill='white')
+                    c.itemconfig(ts, fill='#968d8d')
+            c.tag_bind(text, "<Enter>", onenter)
+            c.tag_bind(textshdw, "<Enter>", onenter)
+            c.tag_bind(textshdw, "<Leave>", onleave)
+            c.tag_bind(text, "<Leave>", onleave)
             c.tag_bind(text, "<Button-1>", onclick)
             c.tag_bind(textshdw, "<Button-1>", onclick)
         equipnoviceshdw = menucanvas.create_text(153, 403, text="EQUIP", fill='#968d8d', font=("Press Start 2P", 23))

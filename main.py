@@ -333,8 +333,10 @@ def newtarget():
         firstpick[0] = False
     else:
         prev = targetnumber[0]
-        choices = [n for n in numhigh if n != prev and (abs(n - prev) >= 3 or abs(n - prev) >= 9)]
+        choices = [n for n in numhigh if n != prev and min(abs(n - prev), 12 - abs(n - prev)) >= 3]
     targetnumber[0] = random.choice(choices)
+    if targetnumber[0] in fading:
+        del fading[targetnumber[0]]
     canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
 def highlightnumb(gen=None):
     if gen is not None and gen != generation[0]:

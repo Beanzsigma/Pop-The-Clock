@@ -9,6 +9,7 @@ passedtarget = [False]
 needle_on_target = [False]
 needlespeed = [1]
 equiped = [0]
+gamemode = ['noob']
 from PIL import Image, ImageSequence, ImageTk
 import sys
 import threading
@@ -421,6 +422,8 @@ def showwin():
     wincanvas.tag_bind(backshdw, "<Leave>", backlev)
     wincanvas.tag_bind(back, "<Button-1>", goback)
     wincanvas.tag_bind(backshdw, "<Button-1>", goback)
+    wincanvas.create_text(353, 43, text='NOOB', font=("Press Start 2P", 33), fill="#968d8d")
+    wincanvas.create_text(350, 40, text="NOOB", font=("Press Start 2P", 33), fill='white')
     wincanvas.create_text(381, 181, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
     wincanvas.create_text(378, 178, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill='white', anchor='center')
     wincanvas.create_text(353, 368, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='#968d8d', anchor='center')
@@ -468,7 +471,94 @@ def numberclick(number):
     lasthigh[0] = None
     needle_on_target[0] = False
     if clockminutes[0] >= 60:
-        showwin()
+        if gamemode[0] == 'noob':
+            showwin()
+        else:
+            showwinpro()
+def showwinpro():
+    gameover[0] = True
+    badgesearned['pro'] = True
+    inputlocked[0] = True
+    winframes = []
+    wingif = Image.open(getpath("Assets/main/main.gif"))
+    for frame in ImageSequence.Iterator(wingif):
+        frame = frame.copy().convert("RGBA")
+        r, g, b, a = frame.split()
+        a = a.point(lambda x: x * 0.6)
+        frame.putalpha(a)
+        winframes.append(ImageTk.PhotoImage(frame.resize((700, 930))))
+    wincanvas = Canvas(app, width=700, height=930, highlightthickness=0, bd=0, bg='black')
+    wincanvas.place(x=0, y=0)
+    wincanvasbg = wincanvas.create_image(0, 0, anchor='nw')
+    wincanvas._winframes = winframes
+    winafterid = [None]
+    def animatewin(frame_index=0):
+        if not wincanvas.winfo_exists():
+            return
+        wincanvas.itemconfig(wincanvasbg, image=winframes[frame_index])
+        winafterid[0] = app.after(35, animatewin, (frame_index + 1) % len(winframes))
+    animatewin()
+    backshdw = wincanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
+    back = wincanvas.create_text(40, 40, text="←", font=("Arial", 39), fill='white')
+    def backent(e):
+        wincanvas.itemconfig(back, fill='#968d8d')
+        wincanvas.itemconfig(backshdw, fill="#1c1c1c")
+    def backlev(e):
+        wincanvas.itemconfig(back, fill="white")
+        wincanvas.itemconfig(backshdw, fill='#968d8d')
+    def goback(e=None):
+        if winafterid[0]:
+            app.after_cancel(winafterid[0])
+        wincanvas.destroy()
+        gameover[0] = False
+        generation[0] += 1
+        needlespeed[0] = 1
+        gohome()
+    wincanvas.tag_bind(back, "<Enter>", backent)
+    wincanvas.tag_bind(backshdw, "<Enter>", backent)
+    wincanvas.tag_bind(back, "<Leave>", backlev)
+    wincanvas.tag_bind(backshdw, "<Leave>", backlev)
+    wincanvas.tag_bind(back, "<Button-1>", goback)
+    wincanvas.tag_bind(backshdw, "<Button-1>", goback)
+    wincanvas.create_text(353, 43, text='PRO', font=("Press Start 2P", 33), fill="#968d8d")
+    wincanvas.create_text(350, 40, text="PRO", font=("Press Start 2P", 33), fill='white')
+    wincanvas.create_text(376, 181, text='Great job!\nYou beat PRO!\nCould you\nbeat hacker?', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
+    wincanvas.create_text(373, 178, text='Great job!\nYou beat PRO!\nCould you\nbeat hacker?', font=("Press Start 2P", 22), fill='white', anchor='center')
+    wincanvas.create_text(353, 368, text='   You have\nearned the PRO\n    badge', font=("Press Start 2P", 20), fill='#968d8d', anchor='center')
+    wincanvas.create_text(350, 365, text='   You have\nearned the PRO\n    badge', font=("Press Start 2P", 20), fill='white', anchor='center')
+    proimg = Image.open(getpath("Assets/main/pro.png"))
+    imgpro = ImageTk.PhotoImage(proimg)
+    wincanvas._proimg = imgpro
+    wincanvas.create_image(347, 550, anchor='center', image=imgpro)
+    rounded_rect(wincanvas, 60, 320, 640, 695, r=23, color="#968d8d", width=2)
+    equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d")
+    equip = wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill='white')
+    def refresheqdis():
+        if badgesequipped['pro']:
+            wincanvas.itemconfig(equip, fill='#74d172')
+            wincanvas.itemconfig(equipshdw, fill='#426343')
+        else:
+            wincanvas.itemconfig(equip, fill='white')
+            wincanvas.itemconfig(equipshdw, fill='#968d8d')
+    refresheqdis()
+    def eqbutton(e=None):
+        badgesequipped['pro'] = not badgesequipped['pro']
+        refresheqdis()
+    def eqent(e):
+        if badgesequipped['pro']:
+            wincanvas.itemconfig(equip, fill='#426343')
+            wincanvas.itemconfig(equipshdw, fill='#132014')
+        else:
+            wincanvas.itemconfig(equip, fill='#968d8d')
+            wincanvas.itemconfig(equipshdw, fill='#1c1c1c')
+    def eqlev(e):
+        refresheqdis()
+    wincanvas.tag_bind(equip, "<Enter>", eqent)
+    wincanvas.tag_bind(equipshdw, "<Enter>", eqent)
+    wincanvas.tag_bind(equip, "<Leave>", eqlev)
+    wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
+    wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
+    wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
 def execfade(number):
     if number not in fading:
         return
@@ -799,6 +889,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             menucanvas.itemconfig(noob, fill='white')   
             menucanvas.itemconfig(noobshdw, fill="#968d8d")
         def startgame(e=None):
+            gamemode[0] = 'noob'
             global afterid
             instantlose[0] = False
             startclock[0] = 30
@@ -838,6 +929,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             menucanvas.itemconfig(pro, fill='white')
             menucanvas.itemconfig(proshdw, fill="#968d8d")
         def startpro(e=None):
+            gamemode[0] = 'pro'
             global afterid
             instantlose[0] = True
             startclock[0] = 0
@@ -877,6 +969,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             menucanvas.itemconfig(hackershdw, fill='#968d8d')
             menucanvas.itemconfig(hacker, fill='white')
         def starthacker(e=None):
+            gamemode[0] = 'hacker'
             global afterid
             instantlose[0] = True
             startclock[0] = 0
@@ -916,6 +1009,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             menucanvas.itemconfig(godmode, fill="white")
             menucanvas.itemconfig(godmodeshdw, fill='#968d8d')
         def startgod(e=None):
+            gamemode[0] = 'god'
             global afterid
             instantlose[0] = True
             startclock[0] = 0
@@ -944,5 +1038,5 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     if straight_to_noob:
         clickclassic()
 
-main()
+app.after(100, showwinpro)
 app.mainloop()

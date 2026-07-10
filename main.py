@@ -63,7 +63,7 @@ def gifbg():
     if afterid:
         app.after_cancel(afterid)
     frames = []
-    gif = Image.open(getpath("Assets/outlinebg.gif"))
+    gif = Image.open(getpath("Assets/game/outlinebg.gif"))
     for frame in ImageSequence.Iterator(gif):
         frame = frame.copy().convert("RGBA")
         r, g, b, a = frame.split()
@@ -86,14 +86,14 @@ def clear(canvas, canvas_img):
     for item in canvas.find_all():
         if item != canvas_img and item not in loading_items:
             canvas.delete(item)
-needle_raw = Image.open(getpath("Assets/needle.png")).convert('RGBA')
+needle_raw = Image.open(getpath("Assets/game/needle.png")).convert('RGBA')
 padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))
 padded.paste(needle_raw, (97, 0))
 scale = 1.6
 needle_img = padded.resize((int(292 * scale), int(260 * scale)), Image.NEAREST)
 import threading
 loadingframes = []
-loadinggif = Image.open(getpath("Assets/loading.gif"))
+loadinggif = Image.open(getpath("Assets/game/loading.gif"))
 for frame in ImageSequence.Iterator(loadinggif):
     frame = frame.copy().convert("RGBA")
     loadingframes.append(ImageTk.PhotoImage(frame.resize((700, 800), Image.NEAREST)))
@@ -381,7 +381,7 @@ def showwin():
     dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
     canvas._windimphoto = dimphoto
     winframes = []
-    wingif = Image.open(getpath("Assets/main.gif"))
+    wingif = Image.open(getpath("Assets/main/main.gif"))
     for frame in ImageSequence.Iterator(wingif):
         frame = frame.copy().convert("RGBA")
         r, g, b, a = frame.split()
@@ -425,7 +425,7 @@ def showwin():
     wincanvas.create_text(378, 178, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill='white', anchor='center')
     wincanvas.create_text(353, 368, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='#968d8d', anchor='center')
     wincanvas.create_text(350, 365, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='white', anchor='center')
-    noviceimg = Image.open("Assets/novice.png")
+    noviceimg = Image.open("Assets/main/novice.png")
     imgnovice = ImageTk.PhotoImage(noviceimg)
     wincanvas._noviceimg = imgnovice
     wincanvas.create_image(350, 555, anchor='center', image=imgnovice)
@@ -485,7 +485,7 @@ def execfade(number):
     fading[number] = intensity -4
     app.after(16, execfade, number)
 bottombgframes = []
-bottombg_gif = Image.open(getpath("Assets/bottomgif.gif"))
+bottombg_gif = Image.open(getpath("Assets/game/bottomgif.gif"))
 for frame in ImageSequence.Iterator(bottombg_gif):
     frame = frame.copy().convert("RGBA")
     r, g, b, a = frame.split()
@@ -529,7 +529,7 @@ def normal(canvas, canvas_img):
     numhigh[10] = canvas.create_text(176, 260, text='10', font=("Press Start 2P", 20), fill='white', anchor='center')
     numhigh[11] = canvas.create_text(250, 184, text='11', font=("Press Start 2P", 20), fill='#967d8d', anchor='center')
     numhigh[11] = canvas.create_text(247, 181,text='11', font=("Press Start 2P", 20), fill='white', anchor='center' )
-    divideimg = Image.open(getpath("Assets/lione2.png"))
+    divideimg = Image.open(getpath("Assets/game/lione2.png"))
     resizeimg = divideimg.resize((770, 200), Image.Resampling.LANCZOS)
     sepimg = ImageTk.PhotoImage(resizeimg)
     clocktextids['shdw'] = canvas.create_text(353, 753, text='11:30', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
@@ -547,7 +547,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     if afterid:
         app.after_cancel(afterid)
     frames = []
-    gif = Image.open(getpath("Assets/main.gif"))
+    gif = Image.open(getpath("Assets/main/main.gif"))
     for frame in ImageSequence.Iterator(gif):
         frame = frame.copy().convert("RGBA")
         r, g, b, a = frame.split()
@@ -590,21 +590,21 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.create_text(350,30, text='BADGES', fill='white', font=("Press Start 2P", 30))
         badgebckshdw = menucanvas.create_text(40, 12, text="←", font=("Arial", 39), fill="#968d8d")
         badgebck = menucanvas.create_text(38, 9, text="←", font=("Arial", 39), fill='white')
-        noviceimg = Image.open("Assets/novice.png")
+        noviceimg = Image.open("Assets/main/novice.png")
         imgnovice = ImageTk.PhotoImage(noviceimg)
         menucanvas._noviceimg = imgnovice
         menucanvas.create_image(150, 200, anchor='center', image=imgnovice)
-        orginalpro = Image.open("Assets/pro.png")
+        orginalpro = Image.open("Assets/main/pro.png")
         width, height = orginalpro.size
         scaledimg = orginalpro.resize((int(width * 1.1), int(height * 1.1)), Image.Resampling.LANCZOS)
         imgpro = ImageTk.PhotoImage(scaledimg)
         menucanvas._proimg = imgpro
         menucanvas.create_image(538, 205, anchor='center', image=imgpro)
-        hackerimg = Image.open("Assets/hacker.png")
+        hackerimg = Image.open("Assets/main/hacker.png")
         imghacker = ImageTk.PhotoImage(hackerimg)
         menucanvas._hackerimg = imghacker
         menucanvas.create_image(150, 560, anchor='center', image=imghacker)
-        godimg = Image.open('Assets/god.png').resize((300, 200))
+        godimg = Image.open('Assets/main/god.png').resize((300, 200))
         imggod = ImageTk.PhotoImage(godimg)
         menucanvas._godimg = imggod
         menucanvas.create_image(520, 540, anchor='center', image=imggod)
@@ -783,6 +783,10 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(backshdw, "<Button-1>", goback)
         menucanvas.create_text(353, 33, text='CLASSIC', fill='#968d8d', font=("Press Start 2P", 33))
         menucanvas.create_text(350, 30, text='CLASSIC', fill='white', font=("Press Start 2P", 33))
+        noobclassic = Image.open('Assets/Classic/noob.png').resize((160, 160))
+        classicnoob = ImageTk.PhotoImage(noobclassic)
+        menucanvas._noobclassic = classicnoob
+        menucanvas.create_image(185,  250, image=classicnoob, anchor='center')
         main_rounded_rect(menucanvas, 30, 102, 340, 405, r=23, color="#968d8d", width=2)   
         menucanvas.create_text(188, 133, text="NOOB", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
         menucanvas.create_text(185, 130, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
@@ -819,6 +823,10 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(noobshdw, "<Button-1>", startgame)
         menucanvas.tag_bind(noob, "<Button-1>", startgame)
         main_rounded_rect(menucanvas, 360, 102, 670, 405, r=23, color="#968d8d", width=2)
+        proclassic = Image.open('Assets/Classic/sweat.png').resize((185, 185))
+        classicpro = ImageTk.PhotoImage(proclassic)
+        menucanvas._proclassic = classicpro
+        menucanvas.create_image(515, 260, image=classicpro, anchor='center')
         menucanvas.create_text(518, 133, text="PRO", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
         menucanvas.create_text(515, 130, text='PRO', font=("Press Start 2P", 33), fill='white', anchor='center')
         proshdw = menucanvas.create_text(518, 383, text="▶", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
@@ -853,7 +861,11 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(proshdw, "<Leave>", prolev)
         menucanvas.tag_bind(pro, "<Button-1>", startpro)
         menucanvas.tag_bind(proshdw, "<Button-1>", startpro)
-        main_rounded_rect(menucanvas, 30, 416, 340, 800, r=23, color="#968d8d", width=2) #303 diff
+        hackerclassic = Image.open("Assets/Classic/hackerclass.png").resize((280, 280))
+        classichacker = ImageTk.PhotoImage(hackerclassic)
+        menucanvas._hackerclassic = classichacker
+        menucanvas.create_image(185, 616, image=classichacker, anchor='center')
+        main_rounded_rect(menucanvas, 30, 416, 340, 800, r=23, color="#968d8d", width=2) #303 dif
         menucanvas.create_text(188, 453, text="HACKER", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
         menucanvas.create_text(185, 450, text='HACKER', font=("Press Start 2P", 33), fill='white', anchor='center' ) 
         hackershdw = menucanvas.create_text(196, 778, text="▶", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
@@ -889,6 +901,10 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(hacker, "<Button-1>", starthacker)
         menucanvas.tag_bind(hackershdw, "<Button-1>", starthacker)
         main_rounded_rect(menucanvas, 360, 416, 670, 800, r=23, color="#968d8d",width=2 )
+        godclassic = Image.open('Assets/Classic/godclass.png').resize((480, 480))
+        classicgod = ImageTk.PhotoImage(godclassic)
+        menucanvas._godclassic = classicgod
+        menucanvas.create_image(515, 615, image=classicgod, anchor='center')
         menucanvas.create_text(518, 453, text="GOD", font=("Press Start 2P", 33),fill='#968d8d', anchor='center')
         menucanvas.create_text(515, 450, text="GOD", font=("Press Start 2P", 33), fill='white', anchor='center')
         godmodeshdw = menucanvas.create_text(518, 778, text="▶", font=("Press Start 2P", 33),fill='#968d8d', anchor='center')

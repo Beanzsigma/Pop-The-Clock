@@ -62,21 +62,40 @@ def rounded_rect(canvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
     return items
 def rotatehue(image, degrees):
     import numpy as np
+    import colorsys
     img = image.convert('RGBA')
+    bucket = int(round(degrees)) % 360
     arr = np.asarray(img, dtype=np.float32) / 255.0
+    if bucket == 0:
+        return img.copy()
     rgb = arr[..., :3]
-    a = arr[..., 3]
-    angle = np.radians(degrees)
-    c, s = np.cos(angle), np.sin(angle)
-    matrix = np.array([
-        [0.213 + c*0.787 - s*0.213, 0.213 - c*0.213 + s*0.143, 0.213 - c*0.213 - s*0.787],
-        [0.715 - c*0.715 - s*0.715, 0.715 + c*0.285 + s*0.140, 0.715 - c*0.715 + s*0.715],
-        [0.072 - c*0.072 + s*0.928, 0.072 - c*0.072 - s*0.283, 0.072 + c*0.928 + s*0.072],
-    ], dtype=np.float32)
-    rotated_rgb = np.clip(rgb @ matrix.T, 0, 1)
-    out = np.dstack([rotated_rgb, a])
-    out = (out * 255).astype(np.uint8)
+    a = arr[..., 3:4]
+    brightness = rgb.max(axis=-1, keepdims=True)
+    brightness = np.clip(brightness * 1.6 + 0.15, 0, 1)
+    hue = bucket / 360.0
+    r1, g1, b1 = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
+    unit_color = np.array([r1, g1, b1], dtype=np.float32)
+    out_rgb = brightness * unit_color
+    out = np.concatenate([out_rgb, a], axis=-1)
+    out = np.clip(out * 255, 0, 255).astype(np.uint8)
     return Image.fromarray(out, mode='RGBA')
+HUESTOPS = [0, 350, 240, 130, 320]
+huepos = [0]
+def huepostodegrees(pos):
+    pos = max(0, min(pos, 360))
+    seglen = 360 / (len(HUESTOPS)-1)
+    idx = int(pos//seglen)
+    if idx>= len(HUESTOPS) -1:
+        idx = len(HUESTOPS) - 2
+    local = (pos - idx * seglen) / seglen
+    start = HUESTOPS[idx]
+    end = HUESTOPS[idx +1 ]
+    diff = end-start
+    if diff >180:
+        diff -= 360
+    elif diff < -180:
+        diff += 360
+    return round((start+diff*local)% 360)
 def gifbg():
     global afterid
     if afterid:
@@ -109,7 +128,7 @@ for _frame in ImageSequence.Iterator(_outlinegif):
     outlinebase_frames.append(_frame.copy().convert("RGBA"))
 huecache = {}
 def gethueframes(degrees):
-    bucket = degrees % 360
+    bucket = int(round(degrees)) % 360
     if bucket in huecache:
         return huecache[bucket]
     frames = []
@@ -168,8 +187,8 @@ def prerender():
         shadow_frames.append(ImageTk.PhotoImage(shadow))
         app.after(0, lambda n=i+1: canvas.itemconfig(loadingcount, text=f"Frames rendered: {n}\n    out of 210"))
         app.after(0, lambda n=i+1: canvas.itemconfig(loadingcountshdw, text=f'Frames rendered: {n}\n    out of 210'))
-    for deg in range(0, 360, 15):
-        gethueframes(deg)
+    for pos in range(0, 361, 15):
+        gethueframes(huepostodegrees(pos))
     loadingdone.set()
     app.after(0, rendercomplete)
 def rendercomplete():
@@ -196,7 +215,8 @@ def showgameover(penalty=True):
     if penalty and not instantlose[0]:
         clockminutes[0] -= 1
         if not instantlose[0]:
-            huedegrees[0] = (huedegrees[0]-15) % 360
+            huepos[0] = max(huepos[0] - 15, 0)
+            huedegrees[0] = huepostodegrees(huepos[0])
             gifbg()
         updateclock()
         if targetnumber[0] in numhigh:
@@ -265,6 +285,7 @@ def restartgame(e=None):
     newtarget()
     generation[0] += 1
     showcountdown(3, generation[0])
+    huepos[0] = 0
     huedegrees[0] = 0
     gifbg()
 def gohome(e=None):
@@ -504,7 +525,8 @@ def numberclick(number):
     execfade(number)
     clockminutes[0] = min(clockminutes[0] + 1, 60)
     updateclock()
-    huedegrees[0] = (huedegrees[0] +15) % 360
+    huepos[0] = min(huepos[0] + 15, 360)
+    huedegrees[0] = huepostodegrees(huepos[0])
     gifbg()
     lasthigh[0] = None
     needle_on_target[0] = False
@@ -1104,6 +1126,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             instantlose[0] = False
             startclock[0] = 30
             needlespeed[0] = 1
+            huepos[0] = 0
+            huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
@@ -1144,6 +1168,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             instantlose[0] = True
             startclock[0] = 0
             needlespeed[0] = 1
+            huepos[0] = 0
+            huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
@@ -1184,6 +1210,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             instantlose[0] = True
             startclock[0] = 0
             needlespeed[0] = 2 
+            huepos[0] = 0
+            huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
@@ -1224,6 +1252,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             instantlose[0] = True
             startclock[0] = 0
             needlespeed[0] = 4
+            huepos[0] = 0
+            huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None

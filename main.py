@@ -8,6 +8,7 @@ generation = [0]
 passedtarget = [False]
 needle_on_target = [False]
 needlespeed = [1]
+huedegrees = [0]
 equiped = [0]
 gamemode = ['noob']
 from PIL import Image, ImageSequence, ImageTk
@@ -59,6 +60,23 @@ def rounded_rect(canvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
     items.append(canvas.create_line(x1, y1+r, x1, y2-r, **line_kwargs))
     items.append(canvas.create_line(x2, y1+r, x2, y2-r, **line_kwargs))
     return items
+def rotatehue(image, degrees):
+    import numpy as np
+    img = image.convert('RGBA')
+    arr = np.asarray(img, dtype=np.float32) / 255.0
+    rgb = arr[..., :3]
+    a = arr[..., 3]
+    angle = np.radians(degrees)
+    c, s = np.cos(angle), np.sin(angle)
+    matrix = np.array([
+        [0.213 + c*0.787 - s*0.213, 0.213 - c*0.213 + s*0.143, 0.213 - c*0.213 - s*0.787],
+        [0.715 - c*0.715 - s*0.715, 0.715 + c*0.285 + s*0.140, 0.715 - c*0.715 + s*0.715],
+        [0.072 - c*0.072 + s*0.928, 0.072 - c*0.072 - s*0.283, 0.072 + c*0.928 + s*0.072],
+    ], dtype=np.float32)
+    rotated_rgb = np.clip(rgb @ matrix.T, 0, 1)
+    out = np.dstack([rotated_rgb, a])
+    out = (out * 255).astype(np.uint8)
+    return Image.fromarray(out, mode='RGBA')
 def gifbg():
     global afterid
     if afterid:
@@ -67,10 +85,11 @@ def gifbg():
     gif = Image.open(getpath("Assets/game/outlinebg.gif"))
     for frame in ImageSequence.Iterator(gif):
         frame = frame.copy().convert("RGBA")
-        r, g, b, a = frame.split()
+        rotated = rotatehue(frame, huedegrees[0])
+        r, g, b, a = rotated.split()
         a = a.point(lambda x: x * 0.4)
-        frame.putalpha(a)
-        frames.append(ImageTk.PhotoImage(frame.resize((700, 700))))
+        rotated.putalpha(a)
+        frames.append(ImageTk.PhotoImage(rotated.resize((700, 700))))
     canvas._outlineframes = frames
     def animate(frame_index=0):
         global afterid
@@ -164,6 +183,9 @@ def showgameover(penalty=True):
     global needle_angle, needledir
     if penalty and not instantlose[0]:
         clockminutes[0] -= 1
+        if not instantlose[0]:
+            huedegrees[0] = (huedegrees[0]-15) % 360
+            gifbg()
         updateclock()
         if targetnumber[0] in numhigh:
             canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
@@ -231,6 +253,8 @@ def restartgame(e=None):
     newtarget()
     generation[0] += 1
     showcountdown(3, generation[0])
+    huedegrees[0] = 0
+    gifbg()
 def gohome(e=None):
     global needle_angle, needledir, afterid
     for item in overlayitems:
@@ -468,6 +492,8 @@ def numberclick(number):
     execfade(number)
     clockminutes[0] = min(clockminutes[0] + 1, 60)
     updateclock()
+    huedegrees[0] = (huedegrees[0] +15) % 360
+    gifbg()
     lasthigh[0] = None
     needle_on_target[0] = False
     if clockminutes[0] >= 60:
@@ -1210,5 +1236,5 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     if straight_to_noob:
         clickclassic()
 
-app.after(100, showwingod)
+main()
 app.mainloop()

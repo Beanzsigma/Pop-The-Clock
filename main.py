@@ -81,15 +81,7 @@ def gifbg():
     global afterid
     if afterid:
         app.after_cancel(afterid)
-    frames = []
-    gif = Image.open(getpath("Assets/game/outlinebg.gif"))
-    for frame in ImageSequence.Iterator(gif):
-        frame = frame.copy().convert("RGBA")
-        rotated = rotatehue(frame, huedegrees[0])
-        r, g, b, a = rotated.split()
-        a = a.point(lambda x: x * 0.4)
-        rotated.putalpha(a)
-        frames.append(ImageTk.PhotoImage(rotated.resize((700, 700))))
+    frames = gethueframes(huedegrees[0])
     canvas._outlineframes = frames
     def animate(frame_index=0):
         global afterid
@@ -111,6 +103,24 @@ padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))
 padded.paste(needle_raw, (97, 0))
 scale = 1.6
 needle_img = padded.resize((int(292 * scale), int(260 * scale)), Image.NEAREST)
+outlinebase_frames = []
+_outlinegif = Image.open(getpath("Assets/game/outlinebg.gif"))
+for _frame in ImageSequence.Iterator(_outlinegif):
+    outlinebase_frames.append(_frame.copy().convert("RGBA"))
+huecache = {}
+def gethueframes(degrees):
+    bucket = degrees % 360
+    if bucket in huecache:
+        return huecache[bucket]
+    frames = []
+    for frame in outlinebase_frames:
+        rotated = rotatehue(frame, bucket)
+        r, g, b, a = rotated.split()
+        a= a.point(lambda x: x*0.4)
+        rotated.putalpha(a)
+        frames.append(ImageTk.PhotoImage(rotated.resize((700, 700))))
+    huecache[bucket] = frames
+    return frames
 import threading
 loadingframes = []
 loadinggif = Image.open(getpath("Assets/game/loading.gif"))
@@ -158,6 +168,8 @@ def prerender():
         shadow_frames.append(ImageTk.PhotoImage(shadow))
         app.after(0, lambda n=i+1: canvas.itemconfig(loadingcount, text=f"Frames rendered: {n}\n    out of 210"))
         app.after(0, lambda n=i+1: canvas.itemconfig(loadingcountshdw, text=f'Frames rendered: {n}\n    out of 210'))
+    for deg in range(0, 360, 15):
+        gethueframes(deg)
     loadingdone.set()
     app.after(0, rendercomplete)
 def rendercomplete():

@@ -9,6 +9,7 @@ passedtarget = [False]
 needle_on_target = [False]
 needlespeed = [1]
 huedegrees = [0]
+displayedhuedeg = [0]
 equiped = [0]
 gamemode = ['noob']
 from PIL import Image, ImageSequence, ImageTk
@@ -65,24 +66,31 @@ def rotatehue(image, degrees):
     import colorsys
     img = image.convert('RGBA')
     bucket = int(round(degrees)) % 360
-    arr = np.asarray(img, dtype=np.float32) / 255.0
     if bucket == 0:
         return img.copy()
+    arr = np.asarray(img, dtype=np.float32) / 255.0
     rgb = arr[..., :3]
     a = arr[..., 3:4]
     brightness = rgb.max(axis=-1, keepdims=True)
     brightness = np.clip(brightness * 1.6 + 0.15, 0, 1)
     hue = bucket / 360.0
     r1, g1, b1 = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
-    unit_color = np.array([r1, g1, b1], dtype=np.float32)
-    out_rgb = brightness * unit_color
-    out = np.concatenate([out_rgb, a], axis=-1)
+    unitcolor = np.array([r1, g1, b1], dtype=np.float32)
+    tintedrgb = brightness * unitcolor
+    dist = min(bucket, 360 - bucket)   
+    FADE_RANGE = 20                   
+    blend = min(dist / FADE_RANGE, 1.0)
+    outrgb = rgb * (1 - blend) + tintedrgb * blend
+    out = np.concatenate([outrgb, a], axis=-1)
     out = np.clip(out * 255, 0, 255).astype(np.uint8)
     return Image.fromarray(out, mode='RGBA')
 HUESTOPS = [0, 350, 240, 130, 320]
 huepos = [0]
+huestep = 5
+def quantizehue(deg):
+    return int(round(deg / huestep)* huestep) % 360
 def huepostodegrees(pos):
-    pos = max(0, min(pos, 360))
+    pos = pos % 360
     seglen = 360 / (len(HUESTOPS)-1)
     idx = int(pos//seglen)
     if idx>= len(HUESTOPS) -1:
@@ -100,11 +108,21 @@ def gifbg():
     global afterid
     if afterid:
         app.after_cancel(afterid)
-    frames = gethueframes(huedegrees[0])
-    canvas._outlineframes = frames
+    displayedhuedeg[0] = huedegrees[0] 
     def animate(frame_index=0):
         global afterid
+        diff = huedegrees[0] - displayedhuedeg[0]
+        if diff > 180:
+            diff -= 360
+        elif diff < -180:
+            diff += 360
+        if abs(diff) > 0.5:
+            displayedhuedeg[0] = (displayedhuedeg[0] + diff * 0.08) % 360
+        else:
+            displayedhuedeg[0] = huedegrees[0]
+        frames = gethueframes(quantizehue(displayedhuedeg[0]))
         canvas.itemconfig(canvasbg, image=frames[frame_index])
+        canvas._outlineframes = frames
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
 def animatebottom():
@@ -187,8 +205,8 @@ def prerender():
         shadow_frames.append(ImageTk.PhotoImage(shadow))
         app.after(0, lambda n=i+1: canvas.itemconfig(loadingcount, text=f"Frames rendered: {n}\n    out of 210"))
         app.after(0, lambda n=i+1: canvas.itemconfig(loadingcountshdw, text=f'Frames rendered: {n}\n    out of 210'))
-    for pos in range(0, 361, 15):
-        gethueframes(huepostodegrees(pos))
+    for bucket in range(0, 360, huestep):
+        gethueframes(bucket)
     loadingdone.set()
     app.after(0, rendercomplete)
 def rendercomplete():
@@ -215,9 +233,8 @@ def showgameover(penalty=True):
     if penalty and not instantlose[0]:
         clockminutes[0] -= 1
         if not instantlose[0]:
-            huepos[0] = max(huepos[0] - 15, 0)
+            huepos[0] = (huepos[0] - 15) % 360
             huedegrees[0] = huepostodegrees(huepos[0])
-            gifbg()
         updateclock()
         if targetnumber[0] in numhigh:
             canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
@@ -525,9 +542,8 @@ def numberclick(number):
     execfade(number)
     clockminutes[0] = min(clockminutes[0] + 1, 60)
     updateclock()
-    huepos[0] = min(huepos[0] + 15, 360)
+    huepos[0] = (huepos[0] + 15) % 360
     huedegrees[0] = huepostodegrees(huepos[0])
-    gifbg()
     lasthigh[0] = None
     needle_on_target[0] = False
     if clockminutes[0] >= 60:

@@ -17,6 +17,7 @@ import sys
 import threading
 import os
 firstpick = [True]
+animatedtexts = {}
 import time
 inputlocked = [True]
 gameover = [False]
@@ -325,6 +326,10 @@ def gohome(e=None):
     if highlightafter[0]:
         app.after_cancel(highlightafter[0])
         highlightafter[0] = None
+    if highlightafter[0]:
+        app.after_cancel(highlightafter[0])
+        highlightafter[0] = None
+    stopallanimatedtexts()
     clear(canvas, canvasbg)
     canvas.itemconfig(canvasbg, image='')
     numhigh.clear()
@@ -830,6 +835,58 @@ for frame in ImageSequence.Iterator(bottombg_gif):
     a = a.point(lambda x: x * 0.8)
     frame.putalpha(a)
     bottombgframes.append(ImageTk.PhotoImage(frame.resize((700, 230), Image.NEAREST)))
+def lerpcolor(c1, c2, t):
+    r = int(c1[0] + (c2[0]-c1[0])*t)
+    g = int(c1[1] + (c2[1]-c1[1])*t)
+    b = int(c1[2] + (c2[2]-c1[2])*t)
+    return f'#{r:02x}{g:02x}{b:02x}'      
+def showanimatedtext(key, text, x, y, font=("Press Start 2P", 16), basecolor=(255, 255, 255), pulsecolor=(253, 27, 91), shadowcolor= '#968d8d', amplitude=8, speed=0.15, wavelength=0.6, pulsespeed=1.3, condition=None):
+    stopanimatedtext(key)
+    widths = []
+    for ch in text:
+        tid = canvas.create_text(0, -1000, text=ch, font=font, anchor='w')
+        bbox = canvas.bbox(tid)
+        widths.append((bbox[2]-bbox[0]) if bbox else 10)
+        canvas.delete(tid)
+    totalw = sum(widths)
+    cx = x-totalw/2
+    mains, shadows, basex = [], [], []
+    for ch, w in zip(text, widths):
+        cxc = cx+ w/2
+        shdw = canvas.create_text(cxc+3, y+3, text=ch, font=font, fill=shadowcolor, anchor='center')
+        main = canvas.create_text(cxc, y, text=ch, font=font, fill=f'#{basecolor[0]:02x}{basecolor[1]:02x}{basecolor[2]:02x}', anchor='center')
+        mains.append(main); shadows.append(shdw); basex.append(cxc)
+        cx += w
+    animatedtexts[key] = {'mains': mains, 'shadows': shadows, 'basex': basex, 'basey': y, 'phase': 0.0, 'after': None, 'amplitude': amplitude, 'speed': speed, 'wavelength': wavelength, 'basecolor': basecolor, 'pulsecolor': pulsecolor, 'pulsespeed': pulsespeed, 'condition': condition}
+    animatetextloop(key)
+def animatetextloop(key):
+    import math
+    d = animatedtexts.get(key)
+    if d is None:
+        return
+    if d['condition'] is not None and not d['condition']():
+        stopanimatedtext(key)
+        return
+    d['phase'] += d['speed']
+    t = (math.sin(d['phase'] * d['pulsespeed']) + 1) / 2
+    color = lerpcolor(d['basecolor'], d['pulsecolor'], t)
+    for i, (main, shdw, bx) in enumerate(zip(d['mains'], d['shadows'], d['basex'])):
+        offset = math.sin(d['phase'] + i * d['wavelength']) * d['amplitude']
+        canvas.coords(main, bx, d['basey'] + offset)
+        canvas.coords(shdw, bx+3, d['basey'] + offset + 3)
+        canvas.itemconfig(main, fill=color)
+    d['after'] = app.after(35, animatetextloop, key)
+def stopanimatedtext(key):
+    d = animatedtexts.pop(key, None)
+    if d is None:
+        return
+    if d['after']:
+        app.after_cancel(d['after'])
+    for item in d['mains'] + d['shadows']:
+        canvas.delete(item)
+def stopallanimatedtexts():
+    for key in list(animatedtexts.keys()):
+        stopanimatedtext(key)
 def normal(canvas, canvas_img):
     global needle, shadow
     numhigh.clear()
@@ -841,8 +898,7 @@ def normal(canvas, canvas_img):
     canvas._bottombg = bottombg_img
     canvas.__dict__['bottombg'] =True
     animatebottom()
-    canvas.create_text(353, 23, text='POP THE CLOCK!', font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
-    canvas.create_text(350, 20, text="POP THE CLOCK!", font=("Press Start 2P", 22), fill="#ffffff", anchor='center')
+    showanimatedtext('POPCLOCL', 'POP THE CLOCK', 350, 20, amplitude=2.5, speed=0.12, wavelength=0.2, basecolor=(255, 255, 255), pulsecolor=(230, 230, 255), font=("Press Start 2P", 24))
     numhigh[12] = canvas.create_text(351, 143, text='12', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
     numhigh[12] = canvas.create_text(348, 140, text="12", font=("Press Start 2P", 20), fill="white", anchor='center')
     numhigh[1] = canvas.create_text(453, 184, text='1', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
@@ -880,6 +936,26 @@ def normal(canvas, canvas_img):
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
+    if gamemode[0] == 'noob':
+        showanimatedtext('good', 'good', 80, 100,amplitude=4, speed=0.12,wavelength=0.3, condition=lambda: gamemode[0]=='noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('luck', 'luck!', 610, 630, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0] == 'noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('noob', "(☞ ͡° ͜ʖ ͡°)☞", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]== 'noob', font=("Arial", 12), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('noob2', "•ᴗ•", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='noob', font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+    if gamemode[0] == 'pro':
+        showanimatedtext("don't", "don't", 80, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+        showanimatedtext('miss', "miss!!!", 610, 630, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]== 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+        showanimatedtext('pro', "ᕙ(  •̀ ᗜ •́  )ᕗ", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='pro', font=("Arial", 12), basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+        showanimatedtext('pro2', "𓁹‿𓁹", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='pro', font=("Arial", 12), basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+    if gamemode[0] == 'hacker':
+        showanimatedtext("try", 'try', 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+        showanimatedtext('hard', 'hard!!', 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+        showanimatedtext('hacker', '⁴⁰⁴', 84, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30), font=("Arial", 24))
+        showanimatedtext('hacker2', "⚠︎", 620, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30), font=('Arial', 22))
+    if gamemode[0] == 'god':
+        showanimatedtext('get', 'get', 80, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+        showanimatedtext('fried', 'fried', 610, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda:gamemode[0] == 'god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+        showanimatedtext('god', "( •̀⤙•́ )", 74, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='god', font=("Arial", 14), basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+        showanimatedtext("god2", "⳻_⳺", 620, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]== "god", font=("Arial", 14),basecolor=(220, 0, 40), pulsecolor=(180, 0, 255) )
 def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     global afterid
     if afterid:

@@ -14,6 +14,8 @@ equiped = [0]
 gamemode = ['noob']
 from PIL import Image, ImageSequence, ImageTk
 import sys
+speedboosted = [False]
+basespeed = [1]
 import threading
 import os
 firstpick = [True]
@@ -305,6 +307,8 @@ def restartgame(e=None):
     showcountdown(3, generation[0])
     huepos[0] = 0
     huedegrees[0] = 0
+    speedboosted[0] = False
+    needlespeed[0] = basespeed[0]
     gifbg()
 def gohome(e=None):
     global needle_angle, needledir, afterid
@@ -383,10 +387,11 @@ def rotate_needle(gen=None):
     if gameover[0]:
         return
     needle_angle = (needle_angle + needlespeed[0] * needledir) % 210
-    canvas.itemconfig(shadow, image=shadow_frames[needle_angle])
-    canvas._shadow = shadow_frames[needle_angle]
-    canvas.itemconfig(needle, image=needle_frames[needle_angle])
-    canvas._needle = needle_frames[needle_angle]
+    idx = int(needle_angle) % 210
+    canvas.itemconfig(shadow, image=shadow_frames[idx])
+    canvas._shadow = shadow_frames[idx]
+    canvas.itemconfig(needle, image=needle_frames[idx])
+    canvas._needle = needle_frames[idx]
     needleafter[0] = app.after(10, lambda: rotate_needle(generation[0]))
 def flipdirection(e=None):
     global needledir
@@ -547,6 +552,8 @@ def numberclick(number):
     execfade(number)
     clockminutes[0] = min(clockminutes[0] + 1, 60)
     updateclock()
+    if gamemode[0] in ('pro', 'hacker', 'god') and clockminutes[0] % 10 == 0 and clockminutes[0] > 0:
+        needlespeed[0] += 0.1
     huepos[0] = (huepos[0] + 15) % 360
     huedegrees[0] = huepostodegrees(huepos[0])
     lasthigh[0] = None
@@ -840,24 +847,26 @@ def lerpcolor(c1, c2, t):
     g = int(c1[1] + (c2[1]-c1[1])*t)
     b = int(c1[2] + (c2[2]-c1[2])*t)
     return f'#{r:02x}{g:02x}{b:02x}'      
-def showanimatedtext(key, text, x, y, font=("Press Start 2P", 16), basecolor=(255, 255, 255), pulsecolor=(253, 27, 91), shadowcolor= '#968d8d', amplitude=8, speed=0.15, wavelength=0.6, pulsespeed=1.3, condition=None):
+def showanimatedtext(key, text, x, y, target=None, font=("Press Start 2P", 16), basecolor=(255, 255, 255), pulsecolor=(253, 27, 91), shadowcolor= '#968d8d', amplitude=8, speed=0.15, wavelength=0.6, pulsespeed=1.3, condition=None):
+    if target is None:
+        target = canvas
     stopanimatedtext(key)
     widths = []
     for ch in text:
-        tid = canvas.create_text(0, -1000, text=ch, font=font, anchor='w')
-        bbox = canvas.bbox(tid)
+        tid = target.create_text(0, -1000, text=ch, font=font, anchor='w')
+        bbox = target.bbox(tid)
         widths.append((bbox[2]-bbox[0]) if bbox else 10)
-        canvas.delete(tid)
+        target.delete(tid)
     totalw = sum(widths)
     cx = x-totalw/2
     mains, shadows, basex = [], [], []
     for ch, w in zip(text, widths):
         cxc = cx+ w/2
-        shdw = canvas.create_text(cxc+3, y+3, text=ch, font=font, fill=shadowcolor, anchor='center')
-        main = canvas.create_text(cxc, y, text=ch, font=font, fill=f'#{basecolor[0]:02x}{basecolor[1]:02x}{basecolor[2]:02x}', anchor='center')
+        shdw = target.create_text(cxc+3, y+3, text=ch, font=font, fill=shadowcolor, anchor='center')
+        main = target.create_text(cxc, y, text=ch, font=font, fill=f'#{basecolor[0]:02x}{basecolor[1]:02x}{basecolor[2]:02x}', anchor='center')
         mains.append(main); shadows.append(shdw); basex.append(cxc)
         cx += w
-    animatedtexts[key] = {'mains': mains, 'shadows': shadows, 'basex': basex, 'basey': y, 'phase': 0.0, 'after': None, 'amplitude': amplitude, 'speed': speed, 'wavelength': wavelength, 'basecolor': basecolor, 'pulsecolor': pulsecolor, 'pulsespeed': pulsespeed, 'condition': condition}
+    animatedtexts[key] = {'target': target, 'mains': mains, 'shadows': shadows, 'basex': basex, 'basey': y, 'phase': 0.0, 'after': None, 'amplitude': amplitude, 'speed': speed, 'wavelength': wavelength, 'basecolor': basecolor, 'pulsecolor': pulsecolor, 'pulsespeed': pulsespeed, 'condition': condition}
     animatetextloop(key)
 def animatetextloop(key):
     import math
@@ -867,14 +876,15 @@ def animatetextloop(key):
     if d['condition'] is not None and not d['condition']():
         stopanimatedtext(key)
         return
+    target = d['target']
     d['phase'] += d['speed']
     t = (math.sin(d['phase'] * d['pulsespeed']) + 1) / 2
     color = lerpcolor(d['basecolor'], d['pulsecolor'], t)
     for i, (main, shdw, bx) in enumerate(zip(d['mains'], d['shadows'], d['basex'])):
         offset = math.sin(d['phase'] + i * d['wavelength']) * d['amplitude']
-        canvas.coords(main, bx, d['basey'] + offset)
-        canvas.coords(shdw, bx+3, d['basey'] + offset + 3)
-        canvas.itemconfig(main, fill=color)
+        target.coords(main, bx, d['basey'] + offset)
+        target.coords(shdw, bx+3, d['basey'] + offset + 3)
+        target.itemconfig(main, fill=color)
     d['after'] = app.after(35, animatetextloop, key)
 def stopanimatedtext(key):
     d = animatedtexts.pop(key, None)
@@ -882,8 +892,9 @@ def stopanimatedtext(key):
         return
     if d['after']:
         app.after_cancel(d['after'])
+    target = d.get('target', canvas)
     for item in d['mains'] + d['shadows']:
-        canvas.delete(item)
+        target.delete(item)
 def stopallanimatedtexts():
     for key in list(animatedtexts.keys()):
         stopanimatedtext(key)
@@ -1085,6 +1096,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
+            stopanimatedtext('clockpop')
             menucanvas.destroy()
             main()
         menucanvas.tag_bind(badgebck, "<Enter>", bbckent)
@@ -1113,14 +1125,15 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     menucanvas.tag_bind(badgeshdw, "<Leave>", badgelev)
     menucanvas.tag_bind(badgeshdw, "<Button-1>", badgescreen)
     menucanvas.tag_bind(badge, "<Button-1>", badgescreen)
-    menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 32), fill='#968d8d')
-    menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",32), fill='white')
+    # menucanvas.create_text(353, 333, text="POP THE CLOCK", font=("Press Start 2P", 32), fill='#968d8d')
+    # menucanvas.create_text(350, 330, text='POP THE CLOCK', font=("Press Start 2P",32), fill='white')
+    showanimatedtext('clockpop', 'POP THE CLOCK', 350, 330, target=menucanvas, amplitude=3 , speed=0.12, wavelength=0.3, basecolor=(255, 255, 255), pulsecolor=(230, 230, 255), font=("Press Start 2P", 32))
     classicshdw= menucanvas.create_text(153, 463, text='CLASSIC', font=("Press Start 2P", 24), fill='#968d8d')
     classic = menucanvas.create_text(150, 460, text="CLASSIC", font=("Press Start 2P" ,24), fill='white')
     specshdw= menucanvas.create_text(553, 463, text="SPECIAL", font=("Press Start 2P", 24), fill="#968d8d")
     spec = menucanvas.create_text(550, 460, text='SPECIAL', font=("Press Start 2P", 24), fill='white')
-    infoshdw = menucanvas.create_text(641, 309, text="ⓘ", font=("Arial", 15), fill='#968d8d')
-    info = menucanvas.create_text(639, 308, text="ⓘ", font=("Arial", 15), fill='white')
+    infoshdw = menucanvas.create_text(652, 309, text="ⓘ", font=("Arial", 15), fill='#968d8d')
+    info = menucanvas.create_text(650, 308, text="ⓘ", font=("Arial", 15), fill='white')
     def infoent(e):
         menucanvas.itemconfig(info, fill="#968d8d")
         menucanvas.itemconfig(infoshdw, fill="#1c1c1c")
@@ -1187,6 +1200,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             if afterid:
                 app.after_cancel(afterid)
                 afterid =None
+            stopanimatedtext('clockpop')
             menucanvas.destroy()
             main()
         menucanvas.tag_bind(back, "<Enter>", backent)
@@ -1218,11 +1232,14 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             instantlose[0] = False
             startclock[0] = 30
             needlespeed[0] = 1
+            basespeed[0] = 1
+            speedboosted[0] = False
             huepos[0] = 0
             huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
+            stopanimatedtext('clockpop')
             menucanvas.destroy()
             for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
                 canvas.itemconfig(item, state='normal')
@@ -1260,11 +1277,14 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             instantlose[0] = True
             startclock[0] = 0
             needlespeed[0] = 1
+            basespeed[0] = 1
+            speedboosted[0] = False
             huepos[0] = 0
             huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
+            stopanimatedtext('clockpop')
             menucanvas.destroy()
             for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
                 canvas.itemconfig(item, state='normal')
@@ -1301,12 +1321,15 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             global afterid
             instantlose[0] = True
             startclock[0] = 0
-            needlespeed[0] = 2 
+            needlespeed[0] = 1.6
+            basespeed[0] = 1.6
             huepos[0] = 0
+            speedboosted[0] = False
             huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
+            stopanimatedtext('clockpop')
             menucanvas.destroy()
             for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
                 canvas.itemconfig(item, state='normal')
@@ -1343,12 +1366,15 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             global afterid
             instantlose[0] = True
             startclock[0] = 0
-            needlespeed[0] = 4
+            needlespeed[0] = 2.8
+            basespeed[0] = 2.8
             huepos[0] = 0
+            speedboosted[0] = False
             huedegrees[0] = 0
             if afterid:
                 app.after_cancel(afterid)
                 afterid = None
+            stopanimatedtext('clockpop')
             menucanvas.destroy()
             for item in (loadingimg, loadinglabel, loadinglabelshdw,loadingcount, loadingcountshdw, loadingbottom ):
                 canvas.itemconfig(item, state='normal')

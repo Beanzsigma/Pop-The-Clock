@@ -1028,33 +1028,31 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.itemconfig(menucanvasbg, image=frames[frame_index])
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
-    badgeicons = []
     badgehieght = 101
     badgeorder = ['novice', 'pro', 'hacker', 'god']
     badgeimgfiles = {'novice': "Assets/main/novice.png", 'pro': "Assets/main/pro.png", 'hacker': "Assets/main/hacker.png", "god": "Assets/main/god.png"}
-    badgepositions = {
-        'novice': (1, 20),
-        'pro': (95, 20), 
-        'hacker': (230, 20), 
-        'god': (320, 10),
-        }
-    badgeimageids = {}
+    equippedpos = (9, 20)
+    equippedimageid = menucanvas.create_image(*equippedpos, anchor='nw', state='hidden')
+    menucanvas._equippedimg =None
+    equippedbadge = None
     for bname in badgeorder:
-        img =Image.open(badgeimgfiles[bname])
-        bbox = img.getbbox()
+        if badgesearned.get(bname, False) and badgesequipped.get(bname, False):
+            equippedbadge = bname
+            break
+    if equippedbadge is not None:
+        img = Image.open(badgeimgfiles[equippedbadge]).convert('RGBA')
+        alpha = img.split()[-1]
+        mask = alpha.point(lambda a: 255 if a > 30 else 0)
+        bbox = mask.getbbox()
         if bbox:
             img = img.crop(bbox)
         ratio = img.width / img.height
         targetw = int(badgehieght * ratio)
         img = img.resize((targetw, badgehieght), Image.Resampling.LANCZOS)
         imgtk = ImageTk.PhotoImage(img)
-        badgeicons.append(imgtk)
-        bx, by = badgepositions[bname]
-        state = 'normal' if badgesearned.get(bname, False) else 'hidden'
-        iid = menucanvas.create_image(bx, by, anchor='nw', image=imgtk, state=state)
-        badgeimageids[bname] = iid
-    menucanvas._badgeicons = badgeicons
-    menucanvas._badgeimageids = badgeimageids
+        menucanvas._equippedimg = imgtk
+        menucanvas.itemconfig(equippedimageid, image=imgtk, state='normal')
+    menucanvas._equippedimageid = equippedimageid
     def main_rounded_rect(menucanvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
         itemz = []
         arc_kwargs = {"outline": color, "width": width}
@@ -1111,9 +1109,15 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             else:
                 c.itemconfig(text, fill='white')
                 c.itemconfig(textshdw, fill='#968d8d')
-            def onclick(e, bn=badge_name, t=text, ts=textshdw):
-                badgesequipped[bn] = not badgesequipped[bn]
-                makeequip(c, bn, ts, t)
+            def onclick(e, bn=badge_name):
+                if not badgesearned[bn]:
+                    return
+                wasequipped = badgesequipped[bn]
+                for other in badgesequipped:
+                    badgesequipped[other] = False
+                badgesequipped[bn] = not wasequipped
+                for bn2, (t2, ts2) in equipwidgets.items():
+                    makeequip(c, bn2, ts2, t2)
                 savedata()
             def onenter(e, bn=badge_name, t=text, ts=textshdw):
                 if not badgesearned[bn]:
@@ -1147,10 +1151,14 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         equiphacker = menucanvas.create_text(150, 700, text='EQUIP', fill='white', font=("Press Start 2P", 23))
         equipgodshdw = menucanvas.create_text(524, 703, text="EQUIP", font=("Press Start 2P", 23), fill='#968d8d')
         equipgod = menucanvas.create_text(521, 700, text="EQUIP", fill='white', font=("Press Start 2P", 23))
-        makeequip(menucanvas, 'novice', equipnoviceshdw, equipnovice)
-        makeequip(menucanvas, 'pro', equipproshdw, equippro)
-        makeequip(menucanvas, 'hacker', equiphackershdw, equiphacker)
-        makeequip(menucanvas, 'god', equipgodshdw, equipgod)
+        equipwidgets = {
+            'novice': (equipnovice, equipnoviceshdw),
+            'pro':    (equippro, equipproshdw),
+            'hacker': (equiphacker, equiphackershdw),
+            'god':    (equipgod, equipgodshdw),
+        }
+        for bn, (t, ts) in equipwidgets.items():
+            makeequip(menucanvas, bn, ts, t)
         def bbckent(e):
             menucanvas.itemconfig(badgebck, fill='#968d8d')
             menucanvas.itemconfig(badgebckshdw, fill='#1c1c1c')

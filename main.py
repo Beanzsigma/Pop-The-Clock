@@ -9,6 +9,7 @@ passedtarget = [False]
 needle_on_target = [False]
 needlespeed = [1]
 huedegrees = [0]
+import json
 displayedhuedeg = [0]
 equiped = [0]
 gamemode = ['noob']
@@ -47,6 +48,22 @@ def getpath(relative_path):
     except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+savefile = getpath("savedata.json")
+def loadsavedata():
+    if os.path.exists(savefile):
+        try:
+            with open(savefile, 'r') as f:
+                data = json.load(f)
+            badgesearned.update(data.get("badgesearned", {}))
+            badgesequipped.update(data.get('badgesequipped', {}))
+        except (json.JSONDecodeError, OSError):
+            pass
+def savedata():
+    try:
+        with open(savefile, 'w') as f:
+            json.dump({'badgesearned': badgesearned, 'badgesequipped': badgesequipped}, f)
+    except OSError:
+        pass
 bottomafter = [None]
 canvas = Canvas(app, width=700, height=819, highlightthickness=0, bd=0, bg='black')
 canvas.place(x=0, y=0)
@@ -469,6 +486,7 @@ fading = {}
 def showwin():   
     gameover[0] = True
     badgesearned['novice'] = True
+    savedata()
     inputlocked[0] = True
     dimimg = Image.new("RGBA", (700, 818), (0, 0, 0, 140))
     dimphoto = ImageTk.PhotoImage(dimimg)
@@ -539,6 +557,7 @@ def showwin():
     def eqbutton(e=None):
         badgesequipped['novice'] = not badgesequipped['novice']
         refresheqdis()
+        savedata()
     def eqent(e):
         if badgesequipped['novice']:
             wincanvas.itemconfig(equip, fill='#426343')
@@ -580,6 +599,7 @@ def numberclick(number):
 def showwinpro():
     gameover[0] = True
     badgesearned['pro'] = True
+    savedata()
     inputlocked[0] = True
     winframes = []
     wingif = Image.open(getpath("Assets/main/main.gif"))
@@ -646,6 +666,7 @@ def showwinpro():
     def eqbutton(e=None):
         badgesequipped['pro'] = not badgesequipped['pro']
         refresheqdis()
+        savedata()
     def eqent(e):
         if badgesequipped['pro']:
             wincanvas.itemconfig(equip, fill='#426343')
@@ -664,6 +685,7 @@ def showwinpro():
 def showwinhacker():
     gameover[0] = True
     badgesearned['hacker'] = True
+    savedata()
     inputlocked[0] = True
     winframes = []
     wingif = Image.open(getpath("Assets/main/main.gif"))
@@ -730,6 +752,7 @@ def showwinhacker():
     def eqbutton(e=None):
         badgesequipped['hacker'] = not badgesequipped['hacker']
         refresheqdis()
+        savedata()
     def eqent(e):
         if badgesequipped['hacker']:
             wincanvas.itemconfig(equip, fill='#426343')
@@ -748,6 +771,7 @@ def showwinhacker():
 def showwingod():
     gameover[0] = True
     badgesearned['god'] = True
+    savedata()
     inputlocked[0] = True
     winframes = []
     wingif = Image.open(getpath("Assets/main/main.gif"))
@@ -814,6 +838,7 @@ def showwingod():
     def eqbutton(e=None):
         badgesequipped['god'] = not badgesequipped['god']
         refresheqdis()
+        savedata()
     def eqent(e):
         if badgesequipped['god']:
             wincanvas.itemconfig(equip, fill='#426343')
@@ -1062,6 +1087,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             def onclick(e, bn=badge_name, t=text, ts=textshdw):
                 badgesequipped[bn] = not badgesequipped[bn]
                 makeequip(c, bn, ts, t)
+                savedata()
             def onenter(e, bn=badge_name, t=text, ts=textshdw):
                 if not badgesearned[bn]:
                     return
@@ -1409,5 +1435,6 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     if straight_to_noob:
         clickclassic()
 
+loadsavedata()
 main()
 app.mainloop()

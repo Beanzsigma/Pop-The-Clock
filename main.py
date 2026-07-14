@@ -239,6 +239,7 @@ def showgameover(penalty=True):
             huepos[0] = (huepos[0] - 15) % 360
             huedegrees[0] = huepostodegrees(huepos[0])
         updateclock()
+        updatetogo()
         if targetnumber[0] in numhigh:
             canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
         lasthigh[0] = None
@@ -301,6 +302,7 @@ def restartgame(e=None):
     gameover[0] = False
     clockminutes[0] = startclock[0]
     updateclock()
+    updatetogo()
     firstpick[0] = True
     newtarget()
     generation[0] += 1
@@ -349,6 +351,12 @@ def gohome(e=None):
     main(straight_to_noob=True)
 countdownitems = []
 clocktextids = {}
+togotextids = {}
+def updatetogo():
+    remaining = max(60 - clockminutes[0], 0)
+    if 'shdw' in togotextids:
+        canvas.itemconfig(togotextids['shdw'], text=f'{remaining} to go!')
+        canvas.itemconfig(togotextids['main'], text=f'{remaining} to go!')
 def updateclock():
     total = 11*60 + clockminutes[0]
     hrs = (total // 60) % 12
@@ -437,6 +445,7 @@ def highlightnumb(gen=None):
             return
         clockminutes[0] -= 1
         updateclock()
+        updatetogo()
         if targetnumber[0] in numhigh:
             canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
         if clockminutes[0] < 0:
@@ -508,8 +517,8 @@ def showwin():
     wincanvas.tag_bind(backshdw, "<Button-1>", goback)
     wincanvas.create_text(353, 43, text='NOOB', font=("Press Start 2P", 33), fill="#968d8d")
     wincanvas.create_text(350, 40, text="NOOB", font=("Press Start 2P", 33), fill='white')
-    wincanvas.create_text(381, 181, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
-    wincanvas.create_text(378, 178, text='Dissapointing... \n You beat the \n easiest level. \n  Now go on \n  and try PRO!', font=("Press Start 2P", 20), fill='white', anchor='center')
+    wincanvas.create_text(381, 181, text='Dissapointing... \n This is the \n easiest level! \n  Now go on \n  and try to \n  beat PRO!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    wincanvas.create_text(378, 178, text='Dissapointing... \n This is the \n easiest level! \n  Now go on \n  and try to \n  beat PRO!', font=("Press Start 2P", 20), fill='white', anchor='center')
     wincanvas.create_text(353, 368, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='#968d8d', anchor='center')
     wincanvas.create_text(350, 365, text='    You have\nearned the NOVICE\n      badge', font=("Press Start 2P", 20), fill='white', anchor='center')
     noviceimg = Image.open("Assets/main/novice.png")
@@ -552,6 +561,7 @@ def numberclick(number):
     execfade(number)
     clockminutes[0] = min(clockminutes[0] + 1, 60)
     updateclock()
+    updatetogo()
     if gamemode[0] in ('pro', 'hacker', 'god') and clockminutes[0] % 10 == 0 and clockminutes[0] > 0:
         needlespeed[0] += 0.1
     huepos[0] = (huepos[0] + 15) % 360
@@ -903,6 +913,7 @@ def normal(canvas, canvas_img):
     numhigh.clear()
     fading.clear()
     clocktextids.clear()
+    togotextids.clear()
     clear(canvas, canvas_img)
     gifbg()
     bottombg_img = canvas.create_image(0, 700, anchor='nw', image=bottombgframes[0])
@@ -937,9 +948,11 @@ def normal(canvas, canvas_img):
     divideimg = Image.open(getpath("Assets/game/lione2.png"))
     resizeimg = divideimg.resize((770, 200), Image.Resampling.LANCZOS)
     sepimg = ImageTk.PhotoImage(resizeimg)
-    clocktextids['shdw'] = canvas.create_text(353, 753, text='11:30', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
-    clocktextids['main'] = canvas.create_text(350, 750, text='11:30', font=("Press Start 2P", 28), fill='white', anchor='center')
+    clocktextids['shdw'] = canvas.create_text(133, 768, text='11:30', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
+    clocktextids['main'] = canvas.create_text(130, 765, text='11:30', font=("Press Start 2P", 28), fill='white', anchor='center')
     canvas.create_image(350, 702, anchor='center', image=sepimg)
+    togotextids['shdw'] = canvas.create_text(523, 768, text=f'{60 - clockminutes[0]} to go!', font=("Press Start 2P", 23), fill='#968d8d', anchor='center')
+    togotextids['main'] = canvas.create_text(520, 765, text=f'{60 - clockminutes[0]} to go!', font=("Press Start 2P", 23), fill='white', anchor='center')
     canvas._sepimg = sepimg
     canvas._needle = needle_frames[0]
     shadow = canvas.create_image(354, 354, anchor='center', image=shadow_frames[0])

@@ -1028,6 +1028,33 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.itemconfig(menucanvasbg, image=frames[frame_index])
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
+    badgeicons = []
+    badgehieght = 101
+    badgeorder = ['novice', 'pro', 'hacker', 'god']
+    badgeimgfiles = {'novice': "Assets/main/novice.png", 'pro': "Assets/main/pro.png", 'hacker': "Assets/main/hacker.png", "god": "Assets/main/god.png"}
+    badgepositions = {
+        'novice': (1, 20),
+        'pro': (95, 20), 
+        'hacker': (230, 20), 
+        'god': (320, 10),
+        }
+    badgeimageids = {}
+    for bname in badgeorder:
+        img =Image.open(badgeimgfiles[bname])
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+        ratio = img.width / img.height
+        targetw = int(badgehieght * ratio)
+        img = img.resize((targetw, badgehieght), Image.Resampling.LANCZOS)
+        imgtk = ImageTk.PhotoImage(img)
+        badgeicons.append(imgtk)
+        bx, by = badgepositions[bname]
+        state = 'normal' if badgesearned.get(bname, False) else 'hidden'
+        iid = menucanvas.create_image(bx, by, anchor='nw', image=imgtk, state=state)
+        badgeimageids[bname] = iid
+    menucanvas._badgeicons = badgeicons
+    menucanvas._badgeimageids = badgeimageids
     def main_rounded_rect(menucanvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
         itemz = []
         arc_kwargs = {"outline": color, "width": width}
@@ -1037,7 +1064,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         itemz.append(menucanvas.create_arc(x1, y2-2*r, x1+2*r, y2, start=180, extent=90, style="arc", **arc_kwargs))
         itemz.append(menucanvas.create_arc(x2-2*r, y2-2*r, x2, y2, start=270, extent=90, style="arc", **arc_kwargs))
         itemz.append(menucanvas.create_line(x1+r, y1, x2-r, y1, **line_kwargs))
-        itemz.append(menucanvas.create_line(x1+r, y2, x2-r, y2, **line_kwargs))           
+        itemz.append(menucanvas.create_line(x1+r, y2, x2-r, y2, **line_kwargs))      
         itemz.append(menucanvas.create_line(x1, y1+r, x1, y2-r, **line_kwargs))
         itemz.append(menucanvas.create_line(x2, y1+r, x2, y2-r, **line_kwargs))
         return itemz

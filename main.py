@@ -1467,9 +1467,117 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         menucanvas.tag_bind(godmode, "<Button-1>", startgod)
     menucanvas.tag_bind(classic, "<Button-1>", clickclassic)
     menucanvas.tag_bind(classicshdw, "<Button-1>", clickclassic)
+    # if straight_to_noob:
+    #     clickclassic()
+    def clickspecial(e=None):
+        for item in menucanvas.find_all():
+            if item!= menucanvasbg:
+                menucanvas.delete(item)
+        backshdw = menucanvas.create_text(42, 41, text='←', font=("Arial", 39), fill='#968d8d')
+        back  = menucanvas.create_text(40, 40, text="←", font=("Arial", 39), fill='white')
+        def backent(e):
+            menucanvas.itemconfig(backshdw, fill='#1c1c1c')
+            menucanvas.itemconfig(back, fill='#968d8d')
+        def backlev(e):
+            menucanvas.itemconfig(back, fill='white')
+            menucanvas.itemconfig(backshdw, fill='#968d8d')
+        def goback(e=None):
+            global afterid
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            stopanimatedtext("clockpop")
+            menucanvas.destroy()
+            main()
+        menucanvas.tag_bind(back, "<Enter>", backent)
+        menucanvas.tag_bind(backshdw, "<Enter>", backent)
+        menucanvas.tag_bind(backshdw, "<Leave>", backlev)
+        menucanvas.tag_bind(back, "<Leave>", backlev)
+        menucanvas.tag_bind(backshdw, "<Button-1>", goback)
+        menucanvas.tag_bind(back, "<Button-1>", goback)
+        menucanvas.create_text(353, 33, text='SPECIAL', fill='#968d8d', font=("Press Start 2P", 33))
+        menucanvas.create_text(350, 30, text='SPECIAL', fill='white', font=("Press Start 2P", 33))
+        noobclassic = Image.open("Assets/Classic/noob.png").resize((160, 160))
+        classicnoob = ImageTk.PhotoImage(noobclassic)
+        menucanvas._noobclassic = classicnoob
+        menucanvas.create_image(185, 250, image=classicnoob, anchor='center')
+        main_rounded_rect(menucanvas, 30, 102, 340, 405, r=23, color='#968d8d', width=2)
+        menucanvas.create_text(188, 133, text="NOOB", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        menucanvas.create_text(185, 130, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
+        noobshdw = menucanvas.create_text(196, 383, text='▶', font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        noob = menucanvas.create_text(193, 380, text="▶", font=("Press Start 2P", 33), fill='white', anchor='center')
+        def noobent(e):
+            menucanvas.itemconfig(noobshdw, fill="#1c1c1c")
+            menucanvas.itemconfig(noob, fill='#968d8d')
+        def nooblev(e):
+            menucanvas.itemconfig(noob, fill='white')
+            menucanvas.itemconfig(noobshdw, fill="#968d8d")
+        menucanvas.tag_bind(noob, "<Enter>", noobent)
+        menucanvas.tag_bind(noobshdw, "<Enter>", noobent)
+        menucanvas.tag_bind(noobshdw, "<Leave>", nooblev)
+        menucanvas.tag_bind(noob, "<Leave>", nooblev)
+        main_rounded_rect(menucanvas, 360, 102, 670, 405, r=23, color='#968d8d', width=2)
+        proclassic = Image.open("Assets/Classic/Sweat.png").resize((185, 185))
+        classicpro = ImageTk.PhotoImage(proclassic)
+        menucanvas._proclassic = classicpro
+        menucanvas.create_image(515, 260, image=classicpro, anchor='center')
+        menucanvas.create_text(518, 133, text='PRO', font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        menucanvas.create_text(515, 130, text="PRO", font=("Press Start 2P", 33), fill='white', anchor='center')
+        proshdw = menucanvas.create_text(518, 383, text="▶", font=("Press Start 2P", 33), fill='#968d8d',anchor='center' )
+        pro = menucanvas.create_text(515, 380, text='▶', fill='white', font=("Press Start 2P", 33), anchor='center')
+        def proent(e):
+            menucanvas.itemconfig(proshdw, fill="#1c1c1c")
+            menucanvas.itemconfig(pro, fill='#968d8d')
+        def prolev(e):
+            menucanvas.itemconfig(pro, fill='white')
+            menucanvas.itemconfig(proshdw, fill="#968d8d")
+        menucanvas.tag_bind(pro, "<Enter>", proent)
+        menucanvas.tag_bind(proshdw, "<Enter>", proent)
+        menucanvas.tag_bind(proshdw, "<Leave>", prolev)
+        menucanvas.tag_bind(pro, "<Leave>", prolev)
+        hackerclassic = Image.open("Assets/Classic/hackerclass.png").resize((280, 280))
+        classichacker = ImageTk.PhotoImage(hackerclassic)
+        menucanvas._hackerclassic = classichacker
+        menucanvas.create_image(185, 616, image=classichacker, anchor='center')
+        main_rounded_rect(menucanvas, 30, 416, 340, 800, r=23, color="#968d8d", width=2)
+        menucanvas.create_text(188, 453, text='HACKER',font=("Press Start 2P", 33), fill='#968d8d', anchor='center' )
+        menucanvas.create_text(185, 450, text='HACKER', font=("Press Start 2P", 33), fill='white', anchor='center')
+        hackershdw = menucanvas.create_text(196, 778, text="▶", font=("Press Start 2P", 33), fill="#968d8d", anchor='center')
+        hacker = menucanvas.create_text(193, 775, text='▶', font=("Press Start 2P", 33), fill='white', anchor='center')
+        def hackerent(e=None):
+            menucanvas.itemconfig(hackershdw, fill="#1c1c1c")
+            menucanvas.itemconfig(hacker, fill='#968d8d')
+        def hackerlev(e=None):
+            menucanvas.itemconfig(hackershdw, fill="#968d8d")
+            menucanvas.itemconfig(hacker, fill='white')
+        menucanvas.tag_bind(hacker, "<Leave>", hackerlev)
+        menucanvas.tag_bind(hackershdw, "<Leave>", hackerlev)
+        menucanvas.tag_bind(hacker, "<Enter>", hackerent)
+        menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
+        main_rounded_rect(menucanvas, 360, 416, 670, 800, r=23, color="#968d8d", width=2)
+        godclassic = Image.open("Assets/Classic/godclass.png").resize((480, 480))
+        classicgod = ImageTk.PhotoImage(godclassic)
+        menucanvas._godclassic = classicgod
+        menucanvas.create_image(515, 615, image=classicgod, anchor='center')
+        menucanvas.create_text(518, 453, text="GOD", font=("Press Start 2P", 33), fill="#968d8d", anchor='center')
+        menucanvas.create_text(515, 450, text='GOD', font=("Press Start 2P", 33), fill='white', anchor='center')
+        godmodeshdw = menucanvas.create_text(518, 778, text="▶", font=("Press Start 2p", 33), fill="#968d8d", anchor='center')
+        godmode = menucanvas.create_text(515, 775, text="▶", font=("Press Start 2P", 33), fill='white', anchor='center')
+        def godent(e):
+            menucanvas.itemconfig(godmodeshdw, fill='#1c1c1c')
+            menucanvas.itemconfig(godmode, fill='#968d8d')
+        def godlev(e):
+            menucanvas.itemconfig(godmodeshdw, fill='#968d8d')
+            menucanvas.itemconfig(godmode, fill='white')
+        menucanvas.tag_bind(godmode, "<Leave>", godlev)
+        menucanvas.tag_bind(godmodeshdw, "<Leave>",godlev )
+        menucanvas.tag_bind(godmodeshdw, "<Enter>", godent)
+        menucanvas.tag_bind(godmode, "<Enter>", godent)
+
+    menucanvas.tag_bind(spec, "<Button-1>", clickspecial)
+    menucanvas.tag_bind(specshdw, "<Button-1>", clickspecial)
     if straight_to_noob:
         clickclassic()
-
 loadsavedata()
 main()
 app.mainloop()

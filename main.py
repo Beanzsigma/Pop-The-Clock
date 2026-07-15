@@ -7,8 +7,14 @@ clockminutes = [30]
 generation = [0]
 passedtarget = [False]
 needle_on_target = [False]
+specialmode = [False]
+specialcode = [[]]
+specialindex = [0]
+specialsolved = {}
 needlespeed = [1]
+specialfading = {}
 huedegrees = [0]
+specialback = [False]
 import json
 displayedhuedeg = [0]
 equiped = [0]
@@ -242,9 +248,13 @@ def rendercomplete():
     inputlocked[0] = True
     clockminutes[0] = startclock[0]
     normal(canvas, canvasbg)
-    newtarget()
+    if not specialmode[0]:
+        newtarget()
     generation[0] += 1
-    showcountdown(3, generation[0])
+    if specialmode[0]:
+        showspecialcode(generation[0])
+    else:
+        showcountdown(3, generation[0])
 needle_angle = 0
 needledir = 1
 overlayitems = []
@@ -366,6 +376,11 @@ def gohome(e=None):
     startclock[0] = 30
     clockminutes[0] = 30
     main(straight_to_noob=True)
+    instantlose[0] = False
+    specialmode[0] = False
+    startclock[0] = 30
+    clockminutes[0] = 30
+    main(straight_to_noob=True)
 countdownitems = []
 clocktextids = {}
 togotextids = {}
@@ -382,6 +397,40 @@ def updateclock():
     if 'shdw' in clocktextids:
         canvas.itemconfig(clocktextids['shdw'], text=timestr)
         canvas.itemconfig(clocktextids['main'], text=timestr)
+def showspecialcode(gen):
+    for item in countdownitems:
+        canvas.delete(item)
+    countdownitems.clear()
+    if gen!= generation[0]:
+        return
+    inputlocked[0] =True
+    dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
+    dimphoto = ImageTk.PhotoImage(dimimg)
+    dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
+    canvas._cddimphoto = dimphoto
+    boxw, boxh = 420, 220
+    x0, y0 = (700-boxw)//2, (819-boxh) // 2
+    box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
+    codelength = 4
+    code = [random.randint(1, 12) for _ in range(codelength)]
+    specialcode[0] = code
+    specialindex[0] = 0
+    specialsolved.clear()
+    specialfading.clear()
+    codetext = '-'.join(str(n) for n in code)      
+    numshdw = canvas.create_text(353, y0+113, text=codetext, font=("Press Start 2P", 20), fill='#968d8d')
+    num = canvas.create_text(350, y0+110, text=codetext, font=("Press Start 2P", 20), fill='white')
+    countdownitems.extend([dim, box, numshdw, num])
+    def finish():
+        if gen!= generation[0]:
+            return
+        for item in countdownitems:
+            canvas.delete(item)
+        countdownitems.clear()
+        inputlocked[0] = False
+        rotate_needle(gen)
+        highlightnumb(gen)
+    app.after(5000, finish)
 def showcountdown(n, gen):
     for item in countdownitems:
         canvas.delete(item)
@@ -423,8 +472,26 @@ def flipdirection(e=None):
     if gameover[0] or inputlocked[0]:
         return
     needledir *= -1
+    if specialmode[0]:
+        degrees = (needle_angle / 210) * 360
+        number = int((degrees / 30 + 3.3) % 12) or 12
+        if number in specialsolved:
+            return
+        idx = specialindex[0]
+        if idx < len(specialcode[0]):
+            expected = specialcode[0][idx]
+            if number == expected:
+                canvas.itemconfig(numhigh[number], fill='#74d172')
+                specialsolved[number] = 'green'
+                specialfading[number] = 255
+                specialexecfade(number, generation[0])
+                specialindex[0] += 1
+            else:
+                canvas.itemconfig(numhigh[number], fill='#fd1b5b')
+                specialsolved[number] = 'red'
+        return
     degrees = (needle_angle / 210) * 360
-    number = int((degrees / 30 +3.3)% 12) or 12
+    number = int((degrees/ 30 + 3.3)% 12) or 12
     if number == targetnumber[0]:
         numberclick(number)
         newtarget()
@@ -449,39 +516,48 @@ def newtarget():
         del fading[targetnumber[0]]
     canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
 def highlightnumb(gen=None):
-    if gen is not None and gen != generation[0]:
-        return
-    if gameover[0]:
-        return
-    degrees = (needle_angle / 210) * 360
-    number = int((degrees / 30 + 3.3) % 12) or 12
-    is_on_target = (number == targetnumber[0])
-    if needle_on_target[0] and not is_on_target:
-        if instantlose[0]:
-            showgameover(penalty=False)
+        if gen is not None and gen != generation[0]:
             return
-        clockminutes[0] -= 1
-        updateclock()
-        updatetogo()
-        if targetnumber[0] in numhigh:
-            canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
-        if clockminutes[0] < 0:
-            showgameover(penalty=False)
+        if gameover[0]:
             return
-    needle_on_target[0] = is_on_target
-    if lasthigh[0] != number:
-        if lasthigh[0] is not None and lasthigh[0] in numhigh and lasthigh[0] not in fading:
-            if lasthigh[0] == targetnumber[0]:
-                canvas.itemconfig(numhigh[lasthigh[0]], fill="#fd1b5b")
-            else:
-                canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
-        if number in numhigh and number not in fading:
-            if number == targetnumber[0]:
-                canvas.itemconfig(numhigh[number], fill="#610822")
-            else:
-                canvas.itemconfig(numhigh[number], fill="#353232")
-        lasthigh[0] = number
-    highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
+        degrees = (needle_angle / 210) * 360
+        number = int((degrees / 30 + 3.3) % 12) or 12
+        if specialmode[0]:
+            if lasthigh[0] != number:
+                if lasthigh[0] is not None and lasthigh[0] in numhigh and lasthigh[0] not in specialsolved:
+                    canvas.itemconfig(numhigh[lasthigh[0]], fill='white')
+                if number in numhigh and number not in specialsolved:
+                    canvas.itemconfig(numhigh[number], fill='#353232')
+                lasthigh[0] = number
+            highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
+            return
+        ontarget = (number == targetnumber[0])
+        if needle_on_target[0] and not ontarget:
+            if instantlose[0]:
+                showgameover(penalty=False)
+                return
+            clockminutes[0] -= 1
+            updateclock()
+            updatetogo()
+            if targetnumber[0] in numhigh:
+                canvas.itemconfig(numhigh[targetnumber[0]], fill="#fd1b5b")
+            if clockminutes[0] < 0:
+                showgameover(penalty=False)
+                return
+        needle_on_target[0] = ontarget
+        if lasthigh[0] != number:
+            if lasthigh[0] is not None and lasthigh[0] in numhigh and lasthigh[0] not in fading:
+                if lasthigh[0] == targetnumber[0]:
+                    canvas.itemconfig(numhigh[lasthigh[0]], fill="#fd1b5b")
+                else:
+                    canvas.itemconfig(numhigh[lasthigh[0]], fill="white")
+            if number in numhigh and number not in fading:
+                if number == targetnumber[0]:
+                    canvas.itemconfig(numhigh[number], fill="#610822")
+                else:
+                    canvas.itemconfig(numhigh[number], fill="#353232")
+            lasthigh[0] = number
+        highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
 fading = {}
 def showwin():   
     gameover[0] = True
@@ -854,6 +930,27 @@ def showwingod():
     wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
     wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
     wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
+def specialexecfade(number, gen):
+    if gen != generation[0]:
+        return
+    if number not in specialfading:
+        return
+    intensity = specialfading[number]
+    if intensity <= 0:
+        if number in numhigh:
+            canvas.itemconfig(numhigh[number], fill='white')
+        del specialfading[number]
+        if number in specialsolved:
+            del specialsolved[number]   
+        return
+    r = int(255 * (1 - intensity / 255))
+    g = 255
+    b = int(255 * (1 - intensity / 255))
+    color = f'#{r:02x}{g:02x}{b:02x}'
+    if number in numhigh:
+        canvas.itemconfig(numhigh[number], fill=color)
+    specialfading[number] = intensity - 4
+    app.after(16, specialexecfade, number, gen)
 def execfade(number):
     if number not in fading:
         return
@@ -1303,6 +1400,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         def startgame(e=None):
             gamemode[0] = 'noob'
             global afterid
+            specialmode[0] =False
             instantlose[0] = False
             startclock[0] = 30
             needlespeed[0] = 1
@@ -1349,6 +1447,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             gamemode[0] = 'pro'
             global afterid
             instantlose[0] = True
+            specialmode[0] = False
             startclock[0] = 0
             needlespeed[0] = 1
             basespeed[0] = 1
@@ -1393,6 +1492,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         def starthacker(e=None):
             gamemode[0] = 'hacker'
             global afterid
+            specialmode[0] = False
             instantlose[0] = True
             startclock[0] = 0
             needlespeed[0] = 1.6
@@ -1439,6 +1539,7 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
             gamemode[0] = 'god'
             global afterid
             instantlose[0] = True
+            specialmode[0] = False
             startclock[0] = 0
             needlespeed[0] = 2.8
             basespeed[0] = 2.8
@@ -1512,6 +1613,33 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
         def nooblev(e):
             menucanvas.itemconfig(noob, fill='white')
             menucanvas.itemconfig(noobshdw, fill="#968d8d")
+        def startspecialnoob(e=None):
+            gamemode[0] = 'noob'
+            global afterid
+            specialmode[0] = True
+            instantlose[0] = False
+            startclock[0] = 30
+            needlespeed[0] = 1
+            basespeed[0] = 1
+            speedboosted[0] = False
+            huepos[0] = 0
+            huedegrees[0] = 0
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            stopanimatedtext('clockpop')
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcount, loadingcountshdw, loadingbottom):
+                canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
+        menucanvas.tag_bind(noob, "<Button-1>", startspecialnoob)
+        menucanvas.tag_bind(noobshdw, "<Button-1>", startspecialnoob)
         menucanvas.tag_bind(noob, "<Enter>", noobent)
         menucanvas.tag_bind(noobshdw, "<Enter>", noobent)
         menucanvas.tag_bind(noobshdw, "<Leave>", nooblev)

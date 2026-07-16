@@ -13,6 +13,7 @@ specialindex = [0]
 specialsolved = {}
 needlespeed = [1]
 specialfading = {}
+specialontarget = [False]
 huedegrees = [0]
 specialback = [False]
 import json
@@ -331,14 +332,18 @@ def restartgame(e=None):
     updateclock()
     updatetogo()
     firstpick[0] = True
-    newtarget()
     generation[0] += 1
-    showcountdown(3, generation[0])
     huepos[0] = 0
     huedegrees[0] = 0
     speedboosted[0] = False
     needlespeed[0] = basespeed[0]
     gifbg()
+    if specialmode[0]:
+        specialontarget[0] = False
+        showspecialcode(generation[0])
+    else:
+        newtarget()
+        showcountdown(3, generation[0])
 def gohome(e=None):
     global needle_angle, needledir, afterid
     for item in overlayitems:
@@ -412,12 +417,19 @@ def showspecialcode(gen):
     x0, y0 = (700-boxw)//2, (819-boxh) // 2
     box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
     codelength = 4
-    code = [random.randint(1, 12) for _ in range(codelength)]
+    minspacing = 4
+    code = [random.randint(1, 12)]
+    while len(code) < codelength:
+        prev = code[-1]
+        numbs = [n for n in range(1, 13) if min(abs(n-prev), 12 - abs(n-prev)) >= minspacing]
+        code.append(random.choice(numbs))
+    specialcode[0] = code
     specialcode[0] = code
     specialindex[0] = 0
     specialsolved.clear()
     specialfading.clear()
     codetext = '-'.join(str(n) for n in code)      
+    specialontarget[0] = False
     numshdw = canvas.create_text(353, y0+113, text=codetext, font=("Press Start 2P", 20), fill='#968d8d')
     num = canvas.create_text(350, y0+110, text=codetext, font=("Press Start 2P", 20), fill='white')
     countdownitems.extend([dim, box, numshdw, num])
@@ -473,10 +485,8 @@ def flipdirection(e=None):
         return
     needledir *= -1
     if specialmode[0]:
-        degrees = (needle_angle / 210) * 360
+        degrees = (needle_angle/210) * 360
         number = int((degrees / 30 + 3.3) % 12) or 12
-        if number in specialsolved:
-            return
         idx = specialindex[0]
         if idx < len(specialcode[0]):
             expected = specialcode[0][idx]
@@ -484,11 +494,11 @@ def flipdirection(e=None):
                 canvas.itemconfig(numhigh[number], fill='#74d172')
                 specialsolved[number] = 'green'
                 specialfading[number] = 255
-                specialexecfade(number, generation[0])
+                specialexecfade(number, generation[0], ( 116, 209, 114))
                 specialindex[0] += 1
+                specialontarget[0] = False
             else:
-                canvas.itemconfig(numhigh[number], fill='#fd1b5b')
-                specialsolved[number] = 'red'
+                showgameover(penalty=False)
         return
     degrees = (needle_angle / 210) * 360
     number = int((degrees/ 30 + 3.3)% 12) or 12
@@ -496,7 +506,7 @@ def flipdirection(e=None):
         numberclick(number)
         newtarget()
     else:
-        showgameover()
+        showgameover(penalty=False)
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
 lasthigh = [None]
@@ -523,6 +533,13 @@ def highlightnumb(gen=None):
         degrees = (needle_angle / 210) * 360
         number = int((degrees / 30 + 3.3) % 12) or 12
         if specialmode[0]:
+            idx = specialindex[0]
+            expected = specialcode[0][idx] if idx < len(specialcode[0]) else None
+            ontarget = (expected is not None and number == expected)
+            if specialontarget[0] and not ontarget:
+                showgameover(penalty=False)
+                return
+            specialontarget[0] = ontarget
             if lasthigh[0] != number:
                 if lasthigh[0] is not None and lasthigh[0] in numhigh and lasthigh[0] not in specialsolved:
                     canvas.itemconfig(numhigh[lasthigh[0]], fill='white')
@@ -930,7 +947,7 @@ def showwingod():
     wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
     wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
     wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
-def specialexecfade(number, gen):
+def specialexecfade(number, gen, basecolor):
     if gen != generation[0]:
         return
     if number not in specialfading:
@@ -941,16 +958,14 @@ def specialexecfade(number, gen):
             canvas.itemconfig(numhigh[number], fill='white')
         del specialfading[number]
         if number in specialsolved:
-            del specialsolved[number]   
+            del specialsolved[number]
         return
-    r = int(255 * (1 - intensity / 255))
-    g = 255
-    b = int(255 * (1 - intensity / 255))
-    color = f'#{r:02x}{g:02x}{b:02x}'
+    t = 1-(intensity / 255)
+    color = lerpcolor(basecolor, (255, 255, 255), t)
     if number in numhigh:
         canvas.itemconfig(numhigh[number], fill=color)
     specialfading[number] = intensity - 4
-    app.after(16, specialexecfade, number, gen)
+    app.after(16, specialexecfade, number, gen, basecolor)
 def execfade(number):
     if number not in fading:
         return

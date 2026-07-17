@@ -17,6 +17,8 @@ specialontarget = [False]
 huedegrees = [0]
 specialback = [False]
 import json
+specialback = [False]
+livesleft = [3]
 displayedhuedeg = [0]
 equiped = [0]
 gamemode = ['noob']
@@ -167,6 +169,15 @@ padded = Image.new('RGBA', (310, 260), (0, 0, 0, 0))
 padded.paste(needle_raw, (97, 0))
 scale = 1.6
 needle_img = padded.resize((int(292 * scale), int(260 * scale)), Image.NEAREST)
+heartraw = Image.open(getpath("Assets/game/heart.png")).convert("RGBA")
+heart_img = heartraw.resize((96, 80), Image.LANCZOS)
+heartphoto = ImageTk.PhotoImage(heart_img)
+heartbrokenmidraw = Image.open(getpath("Assets/game/heartbrokemid.png"))
+heartbrokenmid_img = heartbrokenmidraw.resize((96, 80), Image.LANCZOS)
+heartbrokenmidphoto = ImageTk.PhotoImage(heartbrokenmid_img)
+heartbroeknfullraw = Image.open(getpath("Assets/game/heartbrokefull.png"))
+heartbrokenfull_img = heartbroeknfullraw.resize((96, 80), Image.LANCZOS)
+heartbrokenfullphoto = ImageTk.PhotoImage(heartbrokenfull_img)
 outlinebase_frames = []
 _outlinegif = Image.open(getpath("Assets/game/outlinebg.gif"))
 for _frame in ImageSequence.Iterator(_outlinegif):
@@ -408,8 +419,13 @@ def showspecialcode(gen):
     countdownitems.clear()
     if gen!= generation[0]:
         return
-    inputlocked[0] =True
-    dimimg = Image.new('RGBA', (700, 819), (0, 0, 0, 140))
+    inputlocked[0] = True
+    livesleft[0] = 3
+    hearts = getattr(canvas, "_hearts", None)
+    if hearts:
+        for hid in hearts:
+            canvas.itemconfig(hid, image=heartphoto)
+    dimimg = Image.new("RGBA", (700, 819), (0, 0, 0, 140))
     dimphoto = ImageTk.PhotoImage(dimimg)
     dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
     canvas._cddimphoto = dimphoto
@@ -418,7 +434,7 @@ def showspecialcode(gen):
     box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
     codelength = 4
     minspacing = 4
-    code = [random.randint(1, 12)]
+    code = [random.randint(6, 12)]
     while len(code) < codelength:
         prev = code[-1]
         numbs = [n for n in range(1, 13) if min(abs(n-prev), 12 - abs(n-prev)) >= minspacing]
@@ -492,13 +508,13 @@ def flipdirection(e=None):
             expected = specialcode[0][idx]
             if number == expected:
                 canvas.itemconfig(numhigh[number], fill='#74d172')
-                specialsolved[number] = 'green'
+                specialsolved[number]= 'green'
                 specialfading[number] = 255
-                specialexecfade(number, generation[0], ( 116, 209, 114))
+                specialexecfade(number, generation[0], (116, 209, 114))
                 specialindex[0] += 1
                 specialontarget[0] = False
             else:
-                showgameover(penalty=False)
+                specialbreakheart()
         return
     degrees = (needle_angle / 210) * 360
     number = int((degrees/ 30 + 3.3)% 12) or 12
@@ -537,8 +553,7 @@ def highlightnumb(gen=None):
             expected = specialcode[0][idx] if idx < len(specialcode[0]) else None
             ontarget = (expected is not None and number == expected)
             if specialontarget[0] and not ontarget:
-                showgameover(penalty=False)
-                return
+                specialbreakheart()
             specialontarget[0] = ontarget
             if lasthigh[0] != number:
                 if lasthigh[0] is not None and lasthigh[0] in numhigh and lasthigh[0] not in specialsolved:
@@ -666,6 +681,28 @@ def showwin():
     wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
     wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
     wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
+def specialbreakheart():
+    if not specialmode[0]:
+        return
+    if livesleft[0] <= 0:
+        return
+    gen = generation[0]
+    livesleft[0] -= 1
+    idx = livesleft[0]
+    hearts = getattr(canvas, '_hearts', None)
+    if not hearts or idx >= len(hearts):
+        return
+    heart_id = hearts[idx]
+    canvas.itemconfig(heart_id, image=heartbrokenmidphoto)
+    canvas._heartbrokenmidphoto = heartbrokenmidphoto
+    def tofull():
+        if gen != generation[0]:
+            return
+        canvas.itemconfig(heart_id, image=heartbrokenfullphoto)
+        canvas._heartbrokenfullphoto = heartbrokenfullphoto
+        if livesleft[0] <= 0:
+            showgameover(penalty=False)
+    app.after(250, tofull)
 def numberclick(number):
     if number not in numhigh:
         return
@@ -1085,11 +1122,21 @@ def normal(canvas, canvas_img):
     divideimg = Image.open(getpath("Assets/game/lione2.png"))
     resizeimg = divideimg.resize((770, 200), Image.Resampling.LANCZOS)
     sepimg = ImageTk.PhotoImage(resizeimg)
-    clocktextids['shdw'] = canvas.create_text(133, 768, text='11:30', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
-    clocktextids['main'] = canvas.create_text(130, 765, text='11:30', font=("Press Start 2P", 28), fill='white', anchor='center')
     canvas.create_image(350, 702, anchor='center', image=sepimg)
-    togotextids['shdw'] = canvas.create_text(523, 768, text=f'{60 - clockminutes[0]} to go!', font=("Press Start 2P", 23), fill='#968d8d', anchor='center')
-    togotextids['main'] = canvas.create_text(520, 765, text=f'{60 - clockminutes[0]} to go!', font=("Press Start 2P", 23), fill='white', anchor='center')
+    if specialmode[0]:
+        heartspacing = 130
+        starty = 765
+        startx = 350 - heartspacing
+        canvas._hearts = []
+        for i in range(3):
+            hid = canvas.create_image(startx + i * heartspacing, starty, anchor='center', image=heartphoto)
+            canvas._hearts.append(hid)
+        canvas._heartphoto = heartphoto
+    else:
+        clocktextids['shdw'] = canvas.create_text(133, 768, text='11:30', font=("Press Start 2P", 28), fill='#968d8d', anchor='center' )
+        clocktextids['main'] = canvas.create_text(130, 765, text='11:30', font=("Press Start 2P", 28), fill='white', anchor='center')
+        togotextids['shdw'] = canvas.create_text(523, 768, text=f'{60 - clockminutes[0]} to go!', font=("Press Start 2P", 23), fill='#968d8d', anchor='center')
+        togotextids['main'] = canvas.create_text(520, 765, text=f'{60 - clockminutes[0]} to go!', font=("Press Start 2P", 23), fill='white', anchor='center')
     canvas._sepimg = sepimg
     canvas._needle = needle_frames[0]
     shadow = canvas.create_image(354, 354, anchor='center', image=shadow_frames[0])
@@ -1097,26 +1144,35 @@ def normal(canvas, canvas_img):
     needle = canvas.create_image(350, 350, anchor='center', image=needle_frames[0])
     canvas.lift(shadow)
     canvas.lift(needle)
-    if gamemode[0] == 'noob':
-        showanimatedtext('good', 'good', 80, 100,amplitude=4, speed=0.12,wavelength=0.3, condition=lambda: gamemode[0]=='noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('luck', 'luck!', 610, 630, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0] == 'noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('noob', "(☞ ͡° ͜ʖ ͡°)☞", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]== 'noob', font=("Arial", 12), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('noob2', "•ᴗ•", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='noob', font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-    if gamemode[0] == 'pro':
+    if specialmode[0]:
+        showanimatedtext('crack', 'crack', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('thecode', 'the code!', 582, 636, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('special', "⠃⠗⠁⠊⠇⠇⠑", 83, 638, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('special2', "⏱", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], font=("Arial", 26), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+    elif gamemode[0] == 'noob':
+        showanimatedtext('good', 'good', 80, 100,amplitude=4, speed=0.12,wavelength=0.3, condition=lambda: gamemode[0]=='noob' and not specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('luck', 'luck!', 610, 630, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0] == 'noob' and not specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('noob', "(☞ ͡° ͜ʖ ͡°)☞", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]== 'noob' and not specialmode[0], font=("Arial", 12), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('noob2', "•ᴗ•", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='noob' and not specialmode[0], font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+    elif gamemode[0] == 'pro':
         showanimatedtext("don't", "don't", 80, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
         showanimatedtext('miss', "miss!!!", 610, 630, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]== 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
         showanimatedtext('pro', "ᕙ(  •̀ ᗜ •́  )ᕗ", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='pro', font=("Arial", 12), basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
         showanimatedtext('pro2', "𓁹‿𓁹", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='pro', font=("Arial", 12), basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
-    if gamemode[0] == 'hacker':
+    elif gamemode[0] == 'hacker':
         showanimatedtext("try", 'try', 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
         showanimatedtext('hard', 'hard!!', 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
         showanimatedtext('hacker', '⁴⁰⁴', 84, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30), font=("Arial", 24))
         showanimatedtext('hacker2', "⚠︎", 620, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30), font=('Arial', 22))
-    if gamemode[0] == 'god':
+    elif gamemode[0] == 'god':
         showanimatedtext('get', 'get', 80, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
         showanimatedtext('fried', 'fried', 610, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda:gamemode[0] == 'god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
         showanimatedtext('god', "( •̀⤙•́ )", 74, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='god', font=("Arial", 14), basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
         showanimatedtext("god2", "⳻_⳺", 620, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]== "god", font=("Arial", 14),basecolor=(220, 0, 40), pulsecolor=(180, 0, 255) )
+    # elif gamemode[0] == 'specialpro':
+    #     showanimatedtext('longer', 'longer', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+    #     showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+    
 def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     global afterid
     if afterid:

@@ -522,7 +522,10 @@ def flipdirection(e=None):
         numberclick(number)
         newtarget()
     else:
-        showgameover(penalty=False)
+        if gamemode[0] == 'noob':
+            showgameover(penalty=True)  
+        else:
+            showgameover(penalty=False)  
 canvas.bind("<Button-1>", flipdirection)
 canvas.bind("<space>", flipdirection)
 lasthigh = [None]

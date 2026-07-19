@@ -19,6 +19,7 @@ specialback = [False]
 import json
 specialback = [False]
 livesleft = [3]
+huecycleafter = [None]
 displayedhuedeg = [0]
 equiped = [0]
 gamemode = ['noob']
@@ -335,6 +336,9 @@ def restartgame(e=None):
     if highlightafter[0]:
         app.after_cancel(highlightafter[0])
         highlightafter[0] = None
+    if huecycleafter[0]:
+        app.after_cancel(huecycleafter[0])
+        huecycleafter[0] = None
     needle_angle = 0
     needledir = 1
     lasthigh[0] = None
@@ -375,6 +379,9 @@ def gohome(e=None):
     if highlightafter[0]:
         app.after_cancel(highlightafter[0])
         highlightafter[0] = None
+    if huecycleafter[0]:
+        app.after_cancel(huecycleafter[0])
+        huecycleafter[0] = None
     stopallanimatedtexts()
     clear(canvas, canvasbg)
     canvas.itemconfig(canvasbg, image='')
@@ -452,6 +459,7 @@ def showspecialcode(gen):
         inputlocked[0] = False
         rotate_needle(gen)
         highlightnumb(gen)
+        spinhue(gen)
     app.after(5000, finish)
 def showcountdown(n, gen):
     for item in countdownitems:
@@ -476,6 +484,14 @@ def showcountdown(n, gen):
     num = canvas.create_text(350, y0+110, text=str(n), font=("Press Start 2P", 55), fill='white')
     countdownitems.extend([dim, box, numshdw, num])
     app.after(800, lambda: showcountdown(n-1, gen))
+def spinhue(gen=None):
+    if gen is not None and gen != generation[0]:
+        return
+    if gameover[0]:
+        return
+    huepos[0] = (huepos[0]+1) % 360
+    huedegrees[0] = huepostodegrees(huepos[0])
+    huecycleafter[0] = app.after(25, lambda: spinhue(generation[0]))
 def rotate_needle(gen=None):
     global needle_angle
     if gen is not None and gen != generation[0]:

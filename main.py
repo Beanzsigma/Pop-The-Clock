@@ -38,8 +38,8 @@ startclock = [30]
 needleafter = [None]
 highlightafter = [None]
 afterid = None
-badgesearned = {"novice": False, 'pro': False, 'hacker': False, 'god': False}
-badgesequipped = {'novice': False, 'pro': False, 'hacker': False, 'god': False}
+badgesearned = {"novice": False, 'specialnovice': False, 'pro': False, 'hacker': False, 'god': False}
+badgesequipped = {'novice': False, 'specialnovice': False, 'pro': False, 'hacker': False, 'god': False}
 app = ctk.CTk()
 app.title("Pop The Clock!")
 app.geometry("700x819")
@@ -375,9 +375,6 @@ def gohome(e=None):
     if highlightafter[0]:
         app.after_cancel(highlightafter[0])
         highlightafter[0] = None
-    if highlightafter[0]:
-        app.after_cancel(highlightafter[0])
-        highlightafter[0] = None
     stopallanimatedtexts()
     clear(canvas, canvasbg)
     canvas.itemconfig(canvasbg, image='')
@@ -388,15 +385,12 @@ def gohome(e=None):
     firstpick[0] = True
     needle_angle = 0
     needledir = 1
-    instantlose[0] = False
-    startclock[0] = 30
-    clockminutes[0] = 30
-    main(straight_to_noob=True)
+    wasspecial = specialmode[0]
     instantlose[0] = False
     specialmode[0] = False
     startclock[0] = 30
     clockminutes[0] = 30
-    main(straight_to_noob=True)
+    main(straight_to_noob=True, straight_to_special=wasspecial)
 countdownitems = []
 clocktextids = {}
 togotextids = {}
@@ -508,11 +502,14 @@ def flipdirection(e=None):
             expected = specialcode[0][idx]
             if number == expected:
                 canvas.itemconfig(numhigh[number], fill='#74d172')
-                specialsolved[number]= 'green'
+                specialsolved[number] = 'green'
                 specialfading[number] = 255
                 specialexecfade(number, generation[0], (116, 209, 114))
                 specialindex[0] += 1
                 specialontarget[0] = False
+                if specialindex[0] >= len(specialcode[0]) and gamemode[0] == 'noob':
+                    showwinspecialnoob()
+                    return
             else:
                 specialbreakheart()
         return
@@ -594,6 +591,96 @@ def highlightnumb(gen=None):
             lasthigh[0] = number
         highlightafter[0] = app.after(10, lambda: highlightnumb(generation[0]))
 fading = {}
+def showwinspecialnoob():
+    gameover[0] = True
+    badgesearned['specialnovice'] = True
+    savedata()
+    inputlocked[0] = True
+    dimimg = Image.new("RGBA", (700, 819), (0, 0, 0, 140))
+    dimphoto = ImageTk.PhotoImage(dimimg)
+    dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
+    canvas._windimphoto = dimphoto
+    winframes = []
+    wingif = Image.open(getpath("Assets/main/main.gif"))
+    for frame in ImageSequence.Iterator(wingif):
+        frame = frame.copy().convert("RGBA")
+        r, g, b, a = frame.split()
+        a = a.point(lambda x: x * 0.6)
+        frame.putalpha(a)
+        winframes.append(ImageTk.PhotoImage(frame.resize((700, 930))))
+    wincanvas = Canvas(app, width=700, height=930, highlightthickness=0, bd=0, bg='black')
+    wincanvas.place(x=0, y=0)
+    wincanvasbg = wincanvas.create_image(0, 0, anchor='nw')
+    wincanvas._winframes = winframes
+    winafterid = [None]
+    def animatewin(frame_index=0):
+        if not wincanvas.winfo_exists():
+            return
+        wincanvas.itemconfig(wincanvasbg, image=winframes[frame_index])
+        winafterid[0] = app.after(35, animatewin, (frame_index + 1) % len(winframes))
+    animatewin()
+    backshdw = wincanvas.create_text(42, 41, text="←", font=("Arial", 39), fill="#968d8d")
+    back = wincanvas.create_text(40, 40, text="←", font=("Arial", 39), fill='white')
+    def backent(e):
+        wincanvas.itemconfig(back, fill='#968d8d')
+        wincanvas.itemconfig(backshdw, fill="#1c1c1c")
+    def backlev(e):
+        wincanvas.itemconfig(back, fill="white")
+        wincanvas.itemconfig(backshdw, fill='#968d8d')
+    def goback(e=None):
+        if winafterid[0]:
+            app.after_cancel(winafterid[0])
+        wincanvas.destroy()
+        gameover[0] = False
+        generation[0] += 1
+        needlespeed[0] = 1
+        gohome()
+    wincanvas.tag_bind(back, "<Enter>", backent)
+    wincanvas.tag_bind(backshdw, "<Enter>", backent)
+    wincanvas.tag_bind(back, "<Leave>", backlev)
+    wincanvas.tag_bind(backshdw, "<Leave>", backlev)
+    wincanvas.tag_bind(back, "<Button-1>", goback)
+    wincanvas.tag_bind(backshdw, "<Button-1>", goback)
+    wincanvas.create_text(353, 43, text='SPECIAL', font=("Press Start 2P", 33), fill="#968d8d")
+    wincanvas.create_text(350, 40, text="SPECIAL", font=("Press Start 2P", 33), fill='white')
+    wincanvas.create_text(353, 181, text='Not bad...\nyou popped\nthe clock!\nNow go on\nand try to\nbeat PRO!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    wincanvas.create_text(350, 178, text='Not bad...\nyou popped\nthe clock!\nNow go on\nand try to\nbeat PRO!', font=("Press Start 2P", 20), fill='white', anchor='center')
+    wincanvas.create_text(353, 368, text='  You have\n  earned the\nSPECIALNOVICE\n    badge', font=("Press Start 2P", 18), fill='#968d8d', anchor='center')
+    wincanvas.create_text(350, 365, text='  You have\n  earned the\nSPECIALNOVICE\n    badge', font=("Press Start 2P", 18), fill='white', anchor='center')
+    specialnoviceimg = Image.open("Assets/main/specialnovice.png")
+    imgspecialnovice = ImageTk.PhotoImage(specialnoviceimg)
+    wincanvas._specialnoviceimg = imgspecialnovice
+    wincanvas.create_image(350, 555, anchor='center', image=imgspecialnovice)
+    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color="#968d8d", width=2)
+    equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d")
+    equip = wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill='white')
+    def refresheqdis():
+        if badgesequipped['specialnovice']:
+            wincanvas.itemconfig(equip, fill='#74d172')
+            wincanvas.itemconfig(equipshdw, fill='#426343')
+        else:
+            wincanvas.itemconfig(equip, fill='white')
+            wincanvas.itemconfig(equipshdw, fill='#968d8d')
+    refresheqdis()
+    def eqbutton(e=None):
+        badgesequipped['specialnovice'] = not badgesequipped['specialnovice']
+        refresheqdis()
+        savedata()
+    def eqent(e):
+        if badgesequipped['specialnovice']:
+            wincanvas.itemconfig(equip, fill='#426343')
+            wincanvas.itemconfig(equipshdw, fill='#132014')
+        else:
+            wincanvas.itemconfig(equip, fill='#968d8d')
+            wincanvas.itemconfig(equipshdw, fill='#1c1c1c')
+    def eqlev(e):
+        refresheqdis()
+    wincanvas.tag_bind(equip, "<Enter>", eqent)
+    wincanvas.tag_bind(equipshdw, "<Enter>", eqent)
+    wincanvas.tag_bind(equip, "<Leave>", eqlev)
+    wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
+    wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
+    wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
 def showwin():   
     gameover[0] = True
     badgesearned['novice'] = True
@@ -1148,8 +1235,8 @@ def normal(canvas, canvas_img):
     canvas.lift(shadow)
     canvas.lift(needle)
     if specialmode[0]:
-        showanimatedtext('crack', 'crack', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('thecode', 'the code!', 582, 636, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('pop', 'pop', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('thecode', 'the clock!', 582, 636, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('special', "⠃⠗⠁⠊⠇⠇⠑", 83, 638, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('special2', "⏱", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], font=("Arial", 26), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
     elif gamemode[0] == 'noob':
@@ -1172,11 +1259,19 @@ def normal(canvas, canvas_img):
         showanimatedtext('fried', 'fried', 610, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda:gamemode[0] == 'god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
         showanimatedtext('god', "( •̀⤙•́ )", 74, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='god', font=("Arial", 14), basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
         showanimatedtext("god2", "⳻_⳺", 620, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]== "god", font=("Arial", 14),basecolor=(220, 0, 40), pulsecolor=(180, 0, 255) )
-    # elif gamemode[0] == 'specialpro':
-    #     showanimatedtext('longer', 'longer', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-    #     showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-    
-def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
+    elif gamemode[0] == 'specialpro':
+        showanimatedtext('longer', 'longer', 80, 100, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+    # elif gamemode[0] == 'specialhacker':
+    #     showanimatedtext('specialhcker', 'long', 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialhacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+    #     showanimatedtext('hackerspecial', 'code??', 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialhacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+    #     showanimatedtext('emoj1hcker', "", 74, 630)
+    # elif gamemode[0] == 'specialgod':
+    #     showanimatedtext('specialgod', 'image', 80, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]== 'specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+    #     showanimatedtext('godspecial', 'losing', 610, 630, amplitude=7, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+    #     showanimatedtext('emoj1', "", 74, 630, amplitude=7, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+    #     showanimatedtext('emoj2', "", 620, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, straight_to_special=False):
     global afterid
     if afterid:
         app.after_cancel(afterid)
@@ -1779,7 +1874,11 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False):
     menucanvas.tag_bind(spec, "<Button-1>", clickspecial)
     menucanvas.tag_bind(specshdw, "<Button-1>", clickspecial)
     if straight_to_noob:
-        clickclassic()
+        if straight_to_special:
+            clickspecial()
+        else:
+            clickclassic()
 loadsavedata()
 main()
+
 app.mainloop()

@@ -39,8 +39,8 @@ startclock = [30]
 needleafter = [None]
 highlightafter = [None]
 afterid = None
-badgesearned = {"novice": False, 'specialnovice': False, 'specialpro': False, 'pro': False, 'hacker': False, 'god': False}
-badgesequipped = {'novice': False, 'specialnovice': False, 'specialpro': False, 'pro': False, 'hacker': False, 'god': False}
+badgesearned = {"novice": False, 'specialnovice': False, 'specialpro': False, 'specialhacker': False, 'pro': False, 'hacker': False, 'god': False}
+badgesequipped = {'novice': False, 'specialnovice': False, 'specialpro': False, 'specialhacker': False, 'pro': False, 'hacker': False, 'god': False}
 app = ctk.CTk()
 app.title("Pop The Clock!")
 app.geometry("700x819")
@@ -433,7 +433,12 @@ def showspecialcode(gen):
     boxw, boxh = 420, 220
     x0, y0 = (700-boxw)//2, (819-boxh) // 2
     box = canvas.create_rectangle(x0, y0, x0+boxw, y0+boxh, fill="#201e1e", outline="#cac7c8", width=3)
-    codelength = 6 if gamemode[0] == 'pro' else 4
+    if gamemode[0] == 'hacker':
+        codelength = 8
+    elif gamemode[0] == 'pro':
+        codelength = 6
+    else:
+        codelength = 4
     minspacing = 4 
     code = [random.randint(6, 12)]
     while len(code) < codelength:
@@ -529,6 +534,8 @@ def flipdirection(e=None):
                         return
                     elif gamemode[0] == 'pro':
                         showwinspecialpro()
+                    elif gamemode[0] == 'hacker':
+                        showwinspecialhacker()
                         return
             else:
                 specialbreakheart()
@@ -782,6 +789,96 @@ def showwinspecialpro():
             wincanvas.itemconfig(equipshdw, fill="#132014")
         else:
             wincanvas.itemconfig(equip, fill="#968d8d")
+            wincanvas.itemconfig(equipshdw, fill='#1c1c1c')
+    def eqlev(e):
+        refresheqdis()
+    wincanvas.tag_bind(equip, "<Enter>", eqent)
+    wincanvas.tag_bind(equipshdw, "<Enter>", eqent)
+    wincanvas.tag_bind(equip, "<Leave>", eqlev)
+    wincanvas.tag_bind(equipshdw, "<Leave>", eqlev)
+    wincanvas.tag_bind(equip, "<Button-1>", eqbutton)
+    wincanvas.tag_bind(equipshdw, "<Button-1>", eqbutton)
+def showwinspecialhacker():
+    gameover[0] = True
+    badgesearned['specialhacker'] = True
+    savedata()
+    inputlocked[0] = True
+    dimimg = Image.new("RGBA", (700, 819), (0, 0, 0, 140))
+    dimphoto = ImageTk.PhotoImage(dimimg)
+    dim = canvas.create_image(0, 0, anchor='nw', image=dimphoto)
+    canvas._windimphoto = dimphoto
+    winframes = []
+    wingif = Image.open(getpath("Assets/main/main.gif"))
+    for frame in ImageSequence.Iterator(wingif):
+        frame = frame.copy().convert("RGBA")
+        r, g, b, a = frame.split()
+        a= a.point(lambda x: x*0.6)
+        frame.putalpha(a)
+        winframes.append(ImageTk.PhotoImage(frame.resize((700, 930))))
+    wincanvas = Canvas(app, width=700, height=930, highlightthickness=0, bd=0, bg='black')
+    wincanvas.place(x=0, y=0)
+    wincanvasbg = wincanvas.create_image(0, 0, anchor='nw')
+    wincanvas._winframes = winframes
+    winafterid = [None]
+    def animatewin(frame_index=0):
+        if not wincanvas.winfo_exists():
+            return
+        wincanvas.itemconfig(wincanvasbg, image=winframes[frame_index])
+        winafterid[0] = app.after(35, animatewin, (frame_index+1) % len(winframes))
+    animatewin()
+    backshdw = wincanvas.create_text(42, 41, text="←", font=("Arial", 39), fill='#968d8d')
+    back = wincanvas.create_text(40, 40, text='←', font=('Arial', 39), fill='white')
+    def backent(e):
+        wincanvas.itemconfig(back, fill='#968d8d')
+        wincanvas.itemconfig(backshdw, fill='#1c1c1c')
+    def backlev(e):
+        wincanvas.itemconfig(back, fill='white')
+        wincanvas.itemconfig(backshdw, fill='#968d8d')
+    def goback(e=None):
+        if winafterid[0]:
+            app.after_cancel(winafterid[0])
+        wincanvas.destroy()
+        gameover[0] = False
+        generation[0] += 1
+        needlespeed[0] = 1
+        gohome()
+    wincanvas.tag_bind(back, "<Enter>", backent)
+    wincanvas.tag_bind(backshdw, "<Enter>", backent)
+    wincanvas.tag_bind(backshdw, "<Leave>", backlev)
+    wincanvas.tag_bind(back, "<Leave>", backlev)
+    wincanvas.tag_bind(back, "<Button-1>", goback)
+    wincanvas.tag_bind(backshdw, "<Button-1>", goback)
+    wincanvas.create_text(353, 43, text='SPECIAL', font=("Press Start 2P", 33), fill="#968d8d")
+    wincanvas.create_text(350, 40, text="SPECIAL", font=("Press Start 2P", 33), fill='white')
+    wincanvas.create_text(378, 181, text='  Cheater...\n you actually\n  cracked the\n     code!\nYour definitely\n going to get\nwhen trying god!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    wincanvas.create_text(375, 178, text='  Cheater...\n you actually\n  cracked the\n     code!\nYour definitely\n going to get\nwhen trying god!', font=("Press Start 2P", 20), fill='white', anchor='center')
+    wincanvas.create_text(353, 353, text='      You have\n      earned the\n SPECIAL HACKER badge', font=("Press Start 2P", 18), fill='#968d8d', anchor='center')
+    wincanvas.create_text(350, 350, text='      You have\n      earned the\n SPECIAL HACKER badge', font=("Press Start 2P", 18), fill='white', anchor='center')
+    specialhackerimg = Image.open("Assets/main/hackerspecial.png").resize((280, 280))
+    imgspecialhacker = ImageTk.PhotoImage(specialhackerimg)
+    wincanvas._specialhackerimg = imgspecialhacker
+    wincanvas.create_image(350, 555, anchor='center', image=imgspecialhacker)
+    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color='#968d8d', width=2)
+    equipshdw = wincanvas.create_text(353, 743, text='EQUIP', font=("Press Start 2P", 22), fill='#968d8d')
+    equip = wincanvas.create_text(350, 740, text="EQUIP", font=("Press Start 2P", 22), fill='white')
+    def refresheqdis():
+        if badgesequipped['specialhacker']:
+            wincanvas.itemconfig(equip, fill='#74d172')
+            wincanvas.itemconfig(equipshdw, fill='#426343')
+        else:
+            wincanvas.itemconfig(equip, fill='white')
+            wincanvas.itemconfig(equipshdw, fill='#968d8d')
+    refresheqdis()
+    def eqbutton(e=None):
+        badgesequipped['specialhacker'] = not(badgesequipped['specialhacker'])
+        refresheqdis()
+        savedata()
+    def eqent(e):
+        if badgesequipped['specialhacker']:
+            wincanvas.itemconfig(equip, fill='#426343')
+            wincanvas.itemconfig(equipshdw, fill='#132014')
+        else:
+            wincanvas.itemconfig(equip, fill='#968d8d')
             wincanvas.itemconfig(equipshdw, fill='#1c1c1c')
     def eqlev(e):
         refresheqdis()
@@ -1345,10 +1442,20 @@ def normal(canvas, canvas_img):
     canvas.lift(shadow)
     canvas.lift(needle)
     if specialmode[0]:
-        showanimatedtext('pop', 'pop', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('thecode', 'the clock!', 582, 636, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('special', "⠃⠗⠁⠊⠇⠇⠑", 83, 638, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('special2', "⏱", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], font=("Arial", 26), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+       if gamemode[0] == 'hacker':
+           showanimatedtext('master', "master", 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: specialmode[0] and gamemode[0] == 'hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+           showanimatedtext("mind", "mind", 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: specialmode[0] and gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+
+       elif gamemode[0] == 'pro':
+            showanimatedtext('longer', 'longer', 80, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+            showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+            #showanimatedtext('special', "⠃⠗⠁⠊⠇⠇⠑", 83, 638, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+            #showanimatedtext('special2', "⏱", 620, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+       else:
+            showanimatedtext('pop', 'pop', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0] and gamemode[0] == 'noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+            showanimatedtext('thecode', 'the clock!', 582, 636, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0] and gamemode[0] == 'noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+            showanimatedtext('special', "⠃⠗⠁⠊⠇⠇⠑", 83, 638, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0] and gamemode[0] == 'noob', font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+            showanimatedtext('special2', "⏱", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0] and gamemode[0] == 'noob', font=("Arial", 26), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
     elif gamemode[0] == 'noob':
         showanimatedtext('good', 'good', 80, 100,amplitude=4, speed=0.12,wavelength=0.3, condition=lambda: gamemode[0]=='noob' and not specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('luck', 'luck!', 610, 630, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0] == 'noob' and not specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
@@ -1372,6 +1479,7 @@ def normal(canvas, canvas_img):
     elif gamemode[0] == 'specialpro':
         showanimatedtext('longer', 'longer', 80, 100, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        #showanimatedtext('emoji1', "", 74, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
     # elif gamemode[0] == 'specialhacker':
     #     showanimatedtext('specialhcker', 'long', 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialhacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
     #     showanimatedtext('hackerspecial', 'code??', 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialhacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
@@ -1405,8 +1513,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         afterid = app.after(35, animate, (frame_index + 1) % len(frames))
     animate()
     badgehieght = 101
-    badgeorder = ['novice', 'specialnovice', 'specialpro', 'pro', 'hacker', 'god']
-    badgeimgfiles = {'novice': "Assets/main/novice.png", 'specialnovice': "Assets/main/specialnovice.png", 'specialpro': "Assets/main/specialpro.png", 'pro': "Assets/main/pro.png", 'hacker': "Assets/main/hacker.png", "god": "Assets/main/god.png"}
+    badgeorder = ['novice', 'specialnovice', 'specialpro', 'specialhacker', 'pro', 'hacker', 'god']
+    badgeimgfiles = {'novice': "Assets/main/novice.png", 'specialnovice': "Assets/main/specialnovice.png", 'specialpro': "Assets/main/specialpro.png", 'specialhacker': "Assets/main/hackerspecial.png", 'pro': "Assets/main/pro.png", 'hacker': "Assets/main/hacker.png", "god": "Assets/main/god.png"}
     equippedpos = (9, 20)
     equippedimageid = menucanvas.create_image(*equippedpos, anchor='nw', state='hidden')
     menucanvas._equippedimg =None
@@ -1598,9 +1706,10 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         noviceequip = menucanvas.create_text(160, 375, text='EQUIP', fill='white', font=("Press Start 2P", 23))
         proequipshdw = menucanvas.create_text(548, 378, text='EQUIP', font=("Press Start 2P", 23), fill='#968d8d')
         proequip = menucanvas.create_text(545, 375, text='EQUIP', font=("Press Start 2P", 23), fill='white')
-        equipwidgets2 = {"specialnovice": (noviceequip, noviceequipshdw), 'specialpro': (proequip, proequipshdw)}
+        equipwidgets2 = {"specialnovice": (noviceequip, noviceequipshdw), 'specialpro': (proequip, proequipshdw), 'specialhacker': (hackerequip, hackerequipsdhw)}
         makeequip(menucanvas, "specialnovice", noviceequipshdw, noviceequip, equipwidgets2)
         makeequip(menucanvas, "specialpro", proequipshdw, proequip, equipwidgets2)
+        makeequip(menucanvas, "specialhacker", hackerequipsdhw, hackerequip, equipwidgets2)
         def bbckent(e):
             menucanvas.itemconfig(badgebck, fill='#968d8d')
             menucanvas.itemconfig(badgebckshdw, fill='#1c1c1c')
@@ -1871,6 +1980,33 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
         menucanvas.tag_bind(hacker, "<Button-1>", starthacker)
         menucanvas.tag_bind(hackershdw, "<Button-1>", starthacker)
+        def startspecialhacker(e=None):
+            gamemode[0] ='hacker'
+            global afterid
+            specialmode[0] = True
+            instantlose[0] = False
+            startclock[0] = 30
+            needlespeed[0] = 1.6
+            basespeed[0] = 1.6
+            speedboosted[0] = False
+            huepos[0] = 0
+            huedegrees[0] = 0
+            if afterid:
+                app.after_cancel(afterid)
+                afterid= None
+            stopanimatedtext('clockpop')
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
+                canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
+        menucanvas.tag_bind(hacker, "<Button-1>", startspecialhacker)
+        menucanvas.tag_bind(hackershdw, "<Button-1>", startspecialhacker)
         main_rounded_rect(menucanvas, 360, 416, 670, 800, r=23, color="#968d8d",width=2 )
         godclassic = Image.open('Assets/Classic/godclass.png').resize((480, 480))
         classicgod = ImageTk.PhotoImage(godclassic)
@@ -2087,5 +2223,6 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         else:
             clickclassic()
 loadsavedata()
-main()
+app.after(5, showwinspecialhacker)
+# main()
 app.mainloop()

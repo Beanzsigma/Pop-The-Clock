@@ -850,8 +850,8 @@ def showwinspecialhacker():
     wincanvas.tag_bind(backshdw, "<Button-1>", goback)
     wincanvas.create_text(353, 43, text='SPECIAL', font=("Press Start 2P", 33), fill="#968d8d")
     wincanvas.create_text(350, 40, text="SPECIAL", font=("Press Start 2P", 33), fill='white')
-    wincanvas.create_text(378, 181, text='  Cheater...\n you actually\n  cracked the\n     code!\nYour definitely\n going to get\nwhen trying god!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
-    wincanvas.create_text(375, 178, text='  Cheater...\n you actually\n  cracked the\n     code!\nYour definitely\n going to get\nwhen trying god!', font=("Press Start 2P", 20), fill='white', anchor='center')
+    wincanvas.create_text(378, 181, text='   Cheater...\n   you actually\n  cracked the code!\n  Your definitely\n  going to get cooked\n  when trying god!', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
+    wincanvas.create_text(375, 178, text='   Cheater...\n   you actually\n  cracked the code!\n  Your definitely\n  going to get cooked\n  when trying god!', font=("Press Start 2P", 20), fill='white', anchor='center')
     wincanvas.create_text(353, 353, text='      You have\n      earned the\n SPECIAL HACKER badge', font=("Press Start 2P", 18), fill='#968d8d', anchor='center')
     wincanvas.create_text(350, 350, text='      You have\n      earned the\n SPECIAL HACKER badge', font=("Press Start 2P", 18), fill='white', anchor='center')
     specialhackerimg = Image.open("Assets/main/hackerspecial.png").resize((280, 280))
@@ -1980,33 +1980,6 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
         menucanvas.tag_bind(hacker, "<Button-1>", starthacker)
         menucanvas.tag_bind(hackershdw, "<Button-1>", starthacker)
-        def startspecialhacker(e=None):
-            gamemode[0] ='hacker'
-            global afterid
-            specialmode[0] = True
-            instantlose[0] = False
-            startclock[0] = 30
-            needlespeed[0] = 1.6
-            basespeed[0] = 1.6
-            speedboosted[0] = False
-            huepos[0] = 0
-            huedegrees[0] = 0
-            if afterid:
-                app.after_cancel(afterid)
-                afterid= None
-            stopanimatedtext('clockpop')
-            menucanvas.destroy()
-            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
-                canvas.itemconfig(item, state='normal')
-            loadingdone.clear()
-            loadingindx[0] = 0
-            if loadingafter[0]:
-                app.after_cancel(loadingafter[0])
-                loadingafter[0] = None
-            animateloading()
-            threading.Thread(target=prerender, daemon=True).start()
-        menucanvas.tag_bind(hacker, "<Button-1>", startspecialhacker)
-        menucanvas.tag_bind(hackershdw, "<Button-1>", startspecialhacker)
         main_rounded_rect(menucanvas, 360, 416, 670, 800, r=23, color="#968d8d",width=2 )
         godclassic = Image.open('Assets/Classic/godclass.png').resize((480, 480))
         classicgod = ImageTk.PhotoImage(godclassic)
@@ -2192,10 +2165,37 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         def hackerlev(e=None):
             menucanvas.itemconfig(hackershdw, fill="#968d8d")
             menucanvas.itemconfig(hacker, fill='white')
+        def startspecialhacker(e=None):
+            gamemode[0] = 'hacker'
+            global afterid
+            specialmode[0] = True
+            instantlose[0] = False
+            startclock[0] = 30
+            needlespeed[0] = 1.6
+            basespeed[0] = 1.6
+            speedboosted[0] = False
+            huepos[0] = 0
+            huedegrees[0] = 0
+            if afterid:
+                app.after_cancel(afterid)
+                afterid = None
+            stopanimatedtext('clockpop')
+            menucanvas.destroy()
+            for item in (loadingimg, loadinglabel, loadinglabelshdw, loadingcount, loadingcountshdw, loadingbottom):
+                canvas.itemconfig(item, state='normal')
+            loadingdone.clear()
+            loadingindx[0] = 0
+            if loadingafter[0]:
+                app.after_cancel(loadingafter[0])
+                loadingafter[0] = None
+            animateloading()
+            threading.Thread(target=prerender, daemon=True).start()
         menucanvas.tag_bind(hacker, "<Leave>", hackerlev)
         menucanvas.tag_bind(hackershdw, "<Leave>", hackerlev)
         menucanvas.tag_bind(hacker, "<Enter>", hackerent)
         menucanvas.tag_bind(hackershdw, "<Enter>", hackerent)
+        menucanvas.tag_bind(hacker, "<Button-1>", startspecialhacker)
+        menucanvas.tag_bind(hackershdw, "<Button-1>", startspecialhacker)
         main_rounded_rect(menucanvas, 360, 416, 670, 800, r=23, color="#968d8d", width=2)
         godclassic = Image.open("Assets/Classic/godclass.png").resize((480, 480))
         classicgod = ImageTk.PhotoImage(godclassic)
@@ -2223,6 +2223,5 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         else:
             clickclassic()
 loadsavedata()
-app.after(5, showwinspecialhacker)
-# main()
+main()
 app.mainloop()

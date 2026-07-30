@@ -59,6 +59,7 @@ def getpath(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 savefile = getpath("savedata.json")
+loadfont(getpath("Assets/PressStart2P-Regular.ttf"))
 def loadsavedata():
     if os.path.exists(savefile):
         try:
@@ -77,6 +78,7 @@ def savedata():
 bottomafter = [None]
 canvas = Canvas(app, width=700, height=819, highlightthickness=0, bd=0, bg='black')
 canvas.place(x=0, y=0)
+canvas.focus_set()
 canvasbg = canvas.create_image(0, 0, anchor='nw')
 def rounded_rect(canvas, x1, y1, x2, y2, r=20, color="#968d8d", width=2):
     items = []
@@ -249,6 +251,7 @@ def prerender():
     loadingdone.set()
     app.after(0, rendercomplete)
 def rendercomplete():
+    _lastneedletick[0] = None
     if loadingafter[0]:
         app.after_cancel(loadingafter[0])
     canvas.itemconfig(loadingimg, state='hidden')
@@ -271,6 +274,8 @@ def rendercomplete():
 needle_angle = 0
 needledir = 1
 overlayitems = []
+import time as _time
+_lastneedletick = [None]
 def showgameover(penalty=True):
     global needle_angle, needledir
     if penalty and not instantlose[0]:
@@ -327,6 +332,7 @@ def showgameover(penalty=True):
     canvas.tag_bind(homeshdw, "<Button-1>", gohome)
 def restartgame(e=None):
     global needle_angle, needledir
+    _lastneedletick[0] = None
     for item in overlayitems:
         canvas.delete(item)
     overlayitems.clear()
@@ -512,7 +518,14 @@ def rotate_needle(gen=None):
         return
     if gameover[0]:
         return
-    needle_angle = (needle_angle + needlespeed[0] * needledir) % 210
+    now = _time.perf_counter()
+    if _lastneedletick[0] is None:
+        dt_ms = 10.0
+    else:
+        dt_ms = (now - _lastneedletick[0]) * 1000.0
+        dt_ms = min(dt_ms, 40.0)
+    _lastneedletick[0] = now
+    needle_angle = (needle_angle + needlespeed[0] * needledir * (dt_ms / 10.0)) % 210
     idx = int(needle_angle) % 210
     canvas.itemconfig(shadow, image=shadow_frames[idx])
     canvas._shadow = shadow_frames[idx]
@@ -521,6 +534,7 @@ def rotate_needle(gen=None):
     needleafter[0] = app.after(10, lambda: rotate_needle(generation[0]))
 def flipdirection(e=None):
     global needledir
+    canvas.focus_set()
     if gameover[0] or inputlocked[0]:
         return
     needledir *= -1
@@ -689,7 +703,7 @@ def showwinspecialnoob():
     imgspecialnovice = ImageTk.PhotoImage(specialnoviceimg)
     wincanvas._specialnoviceimg = imgspecialnovice
     wincanvas.create_image(350, 555, anchor='center', image=imgspecialnovice)
-    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color="#968d8d", width=2)
+    rounded_rect(wincanvas, 60, 298, 640, 695, r=23, color="#968d8d", width=2)
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d")
     equip = wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -779,7 +793,7 @@ def showwinspecialpro():
     imgspeicalpro = ImageTk.PhotoImage(specialproimg)
     wincanvas._specialproimg = imgspeicalpro
     wincanvas.create_image(350, 555, anchor='center', image=imgspeicalpro)
-    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color='#968d8d', width=2)
+    rounded_rect(wincanvas, 60, 298, 640, 695, r=23, color='#968d8d', width=2)
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d" )
     equip = wincanvas.create_text(350, 740, text="EQUIP", font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -869,7 +883,7 @@ def showwinspecialhacker():
     imgspecialhacker = ImageTk.PhotoImage(specialhackerimg)
     wincanvas._specialhackerimg = imgspecialhacker
     wincanvas.create_image(350, 555, anchor='center', image=imgspecialhacker)
-    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color='#968d8d', width=2)
+    rounded_rect(wincanvas, 60, 298, 640, 695, r=23, color='#968d8d', width=2)
     equipshdw = wincanvas.create_text(353, 743, text='EQUIP', font=("Press Start 2P", 22), fill='#968d8d')
     equip = wincanvas.create_text(350, 740, text="EQUIP", font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -959,7 +973,7 @@ def showwinspecialgod():
     imgspecialgod = ImageTk.PhotoImage(specialgodimg)
     wincanvas._specialgodimg = imgspecialgod
     wincanvas.create_image(350, 555, anchor='center', image=imgspecialgod)
-    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color='#968d8d', width=2)
+    rounded_rect(wincanvas, 60, 298, 640, 695, r=23, color='#968d8d', width=2)
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill='#968d8d')
     equip = wincanvas.create_text(350, 740, text="EQUIP", font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -1049,7 +1063,7 @@ def showwin():
     imgnovice = ImageTk.PhotoImage(noviceimg)
     wincanvas._noviceimg = imgnovice
     wincanvas.create_image(350, 555, anchor='center', image=imgnovice)
-    rounded_rect(wincanvas, 60, 320, 640, 695, r=23,color="#968d8d", width=2 )
+    rounded_rect(wincanvas, 60, 310, 640, 695, r=23,color="#968d8d", width=2 )
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d")
     equip= wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -1180,7 +1194,7 @@ def showwinpro():
     imgpro = ImageTk.PhotoImage(proimg)
     wincanvas._proimg = imgpro
     wincanvas.create_image(347, 550, anchor='center', image=imgpro)
-    rounded_rect(wincanvas, 60, 320, 640, 695, r=23, color="#968d8d", width=2)
+    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color="#968d8d", width=2)
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill="#968d8d")
     equip = wincanvas.create_text(350, 740, text='EQUIP', font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -1266,7 +1280,7 @@ def showwinhacker():
     imghacker = ImageTk.PhotoImage(hackerimg)
     wincanvas._hackerimg = imghacker
     wincanvas.create_image(350, 550, anchor='center', image=imghacker)
-    rounded_rect(wincanvas, 60, 320, 640, 695, r=23, color="#968d8d", width=2)
+    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color="#968d8d", width=2)
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill='#968d8d')
     equip = wincanvas.create_text(350, 740, text="EQUIP", font=("Press Start 2P", 22), fill='white')
     def refresheqdis():
@@ -1348,9 +1362,9 @@ def showwingod():
     imggod = ImageTk.PhotoImage(godimg)
     wincanvas._godimg = imggod
     wincanvas.create_image(347, 550, anchor='center', image=imggod)
-    rounded_rect(wincanvas, 60, 320, 640, 695, r=23, color='#968d8d', width=2)
-    wincanvas.create_text(387, 181, text="    Yeah, \nyour cheating, \nor using auto.\n Touch grass, \n    kid!", font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
-    wincanvas.create_text(384, 178, text="    Yeah, \nyour cheating, \nor using auto.\n Touch grass, \n    kid!", font=("Press Start 2P", 22), fill='white', anchor='center')
+    rounded_rect(wincanvas, 60, 310, 640, 695, r=23, color='#968d8d', width=2)
+    wincanvas.create_text(387, 181, text="    Yeah, \nyour cheating, \nor using hacks.\n Touch grass, \n    kid!", font=("Press Start 2P", 22), fill="#968d8d", anchor='center')
+    wincanvas.create_text(384, 178, text="    Yeah, \nyour cheating, \nor using hacks.\n Touch grass, \n    kid!", font=("Press Start 2P", 22), fill='white', anchor='center')
     wincanvas.create_text(353, 373, text=' You have\n earned the\n GOD badge', font=("Press Start 2P", 20), fill='#968d8d')
     wincanvas.create_text(350, 370, fill='white', text=' You have\n earned the\n GOD badge', font=("Press Start 2P", 20))
     equipshdw = wincanvas.create_text(353, 743, text="EQUIP", font=("Press Start 2P", 22), fill='#968d8d')
@@ -1492,7 +1506,7 @@ def normal(canvas, canvas_img):
     canvas._bottombg = bottombg_img
     canvas.__dict__['bottombg'] =True
     animatebottom()
-    showanimatedtext('POPCLOCL', 'POP THE CLOCK', 350, 20, amplitude=2.5, speed=0.12, wavelength=0.2, basecolor=(255, 255, 255), pulsecolor=(230, 230, 255), font=("Press Start 2P", 24))
+    showanimatedtext('POPCLOCL', 'POP THE CLOCK', 350, 28, amplitude=2.5, speed=0.12, wavelength=0.2, basecolor=(255, 255, 255), pulsecolor=(230, 230, 255), font=("Press Start 2P", 24))
     numhigh[12] = canvas.create_text(351, 143, text='12', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
     numhigh[12] = canvas.create_text(348, 140, text="12", font=("Press Start 2P", 20), fill="white", anchor='center')
     numhigh[1] = canvas.create_text(453, 184, text='1', font=("Press Start 2P", 20), fill="#968d8d", anchor='center')
@@ -1866,8 +1880,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
     classic = menucanvas.create_text(150, 460, text="CLASSIC", font=("Press Start 2P" ,24), fill='white')
     specshdw= menucanvas.create_text(553, 463, text="SPECIAL", font=("Press Start 2P", 24), fill="#968d8d")
     spec = menucanvas.create_text(550, 460, text='SPECIAL', font=("Press Start 2P", 24), fill='white')
-    infoshdw = menucanvas.create_text(652, 309, text="ⓘ", font=("Arial", 15), fill='#968d8d')
-    info = menucanvas.create_text(650, 308, text="ⓘ", font=("Arial", 15), fill='white')
+    infoshdw = menucanvas.create_text(657, 309, text="ⓘ", font=("Arial", 15), fill='#968d8d')
+    info = menucanvas.create_text(656, 308, text="ⓘ", font=("Arial", 15), fill='white')
     def infoent(e):
         menucanvas.itemconfig(info, fill="#968d8d")
         menucanvas.itemconfig(infoshdw, fill="#1c1c1c")
@@ -1950,8 +1964,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         menucanvas._noobclassic = classicnoob
         menucanvas.create_image(185,  250, image=classicnoob, anchor='center')
         main_rounded_rect(menucanvas, 30, 102, 340, 405, r=23, color="#968d8d", width=2)   
-        menucanvas.create_text(188, 133, text="NOOB", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
-        menucanvas.create_text(185, 130, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
+        menucanvas.create_text(188, 141, text="NOOB", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
+        menucanvas.create_text(185, 138, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
         noobshdw = menucanvas.create_text(196, 383, text="▶", font=("Press Start 2P", 33 ), fill='#968d8d', anchor='center')
         noob = menucanvas.create_text(193, 380, text='▶', font=("Press Start 2P", 33), fill='white', anchor='center')
         def noobent(e):
@@ -1996,8 +2010,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         classicpro = ImageTk.PhotoImage(proclassic)
         menucanvas._proclassic = classicpro
         menucanvas.create_image(515, 260, image=classicpro, anchor='center')
-        menucanvas.create_text(518, 133, text="PRO", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
-        menucanvas.create_text(515, 130, text='PRO', font=("Press Start 2P", 33), fill='white', anchor='center')
+        menucanvas.create_text(518, 141, text="PRO", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        menucanvas.create_text(515, 138, text='PRO', font=("Press Start 2P", 33), fill='white', anchor='center')
         proshdw = menucanvas.create_text(518, 383, text="▶", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
         pro = menucanvas.create_text(515, 380, text='▶', font=("Press Start 2P", 33), fill='white', anchor='center') 
         def proent(e):
@@ -2166,8 +2180,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         menucanvas._noobclassic = classicnoob
         menucanvas.create_image(185, 250, image=classicnoob, anchor='center')
         main_rounded_rect(menucanvas, 30, 102, 340, 405, r=23, color='#968d8d', width=2)
-        menucanvas.create_text(188, 133, text="NOOB", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
-        menucanvas.create_text(185, 130, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
+        menucanvas.create_text(188, 141, text="NOOB", font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        menucanvas.create_text(185, 138, text='NOOB', font=("Press Start 2P", 33), fill='white', anchor='center')
         noobshdw = menucanvas.create_text(196, 383, text='▶', font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
         noob = menucanvas.create_text(193, 380, text="▶", font=("Press Start 2P", 33), fill='white', anchor='center')
         def noobent(e):
@@ -2212,8 +2226,8 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         classicpro = ImageTk.PhotoImage(proclassic)
         menucanvas._proclassic = classicpro
         menucanvas.create_image(515, 260, image=classicpro, anchor='center')
-        menucanvas.create_text(518, 133, text='PRO', font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
-        menucanvas.create_text(515, 130, text="PRO", font=("Press Start 2P", 33), fill='white', anchor='center')
+        menucanvas.create_text(518, 141, text='PRO', font=("Press Start 2P", 33), fill='#968d8d', anchor='center')
+        menucanvas.create_text(515, 138, text="PRO", font=("Press Start 2P", 33), fill='white', anchor='center')
         proshdw = menucanvas.create_text(518, 383, text="▶", font=("Press Start 2P", 33), fill='#968d8d',anchor='center' )
         pro = menucanvas.create_text(515, 380, text='▶', fill='white', font=("Press Start 2P", 33), anchor='center')
         def proent(e):
@@ -2357,5 +2371,5 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         else:
             clickclassic()
 loadsavedata()
-main()
+app.after(10, showwinpro)
 app.mainloop()

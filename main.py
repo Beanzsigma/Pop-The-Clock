@@ -1596,16 +1596,6 @@ def normal(canvas, canvas_img):
     elif gamemode[0] == 'specialpro':
         showanimatedtext('longer', 'longer', 80, 100, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        #showanimatedtext('emoji1', "", 74, 630, amplitude=5, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-    # elif gamemode[0] == 'specialhacker':
-    #     showanimatedtext('specialhcker', 'long', 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialhacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
-    #     showanimatedtext('hackerspecial', 'code??', 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialhacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
-    #     showanimatedtext('emoj1hcker', "", 74, 630)
-    # elif gamemode[0] == 'specialgod':
-    #     showanimatedtext('specialgod', 'image', 80, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]== 'specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
-    #     showanimatedtext('godspecial', 'losing', 610, 630, amplitude=7, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
-    #     showanimatedtext('emoj1', "", 74, 630, amplitude=7, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
-    #     showanimatedtext('emoj2', "", 620, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='specialgod', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
 def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, straight_to_special=False):
     global afterid
     if afterid:
@@ -1823,10 +1813,6 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         noviceequip = menucanvas.create_text(160, 375, text='EQUIP', fill='white', font=("Press Start 2P", 23))
         proequipshdw = menucanvas.create_text(548, 378, text='EQUIP', font=("Press Start 2P", 23), fill='#968d8d')
         proequip = menucanvas.create_text(545, 375, text='EQUIP', font=("Press Start 2P", 23), fill='white')
-        equipwidgets2 = {"specialnovice": (noviceequip, noviceequipshdw), 'specialpro': (proequip, proequipshdw), 'specialhacker': (hackerequip, hackerequipsdhw)}
-        makeequip(menucanvas, "specialnovice", noviceequipshdw, noviceequip, equipwidgets2)
-        makeequip(menucanvas, "specialpro", proequipshdw, proequip, equipwidgets2)
-        makeequip(menucanvas, "specialhacker", hackerequipsdhw, hackerequip, equipwidgets2)
         def bbckent(e):
             menucanvas.itemconfig(badgebck, fill='#968d8d')
             menucanvas.itemconfig(badgebckshdw, fill='#1c1c1c')
@@ -1861,6 +1847,13 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         menucanvas.create_text(530, 648, text='SPECIAL GOD', fill='white', font=("Press Start 2P", 14))
         specialgodshdwequip = menucanvas.create_text(533, 701, text="EQUIP", fill="#968d8d", font=("Press Start 2P", 23))
         specialgodequip = menucanvas.create_text(530, 698, text="EQUIP", fill='white', font=("Press Start 2P", 23))
+        equipwidgets2 = {"specialnovice": (noviceequip, noviceequipshdw), 'specialpro': (proequip, proequipshdw), 'specialhacker': (hackerequip, hackerequipsdhw), 'specialgod': (specialgodequip, specialgodshdwequip)}
+        makeequip(menucanvas, "specialnovice", noviceequipshdw, noviceequip, equipwidgets2)
+        makeequip(menucanvas, "specialpro", proequipshdw, proequip, equipwidgets2)
+        makeequip(menucanvas, "specialhacker", hackerequipsdhw, hackerequip, equipwidgets2)
+        makeequip(menucanvas, "specialgod", specialgodshdwequip, specialgodequip, equipwidgets2)
+        menucanvas.tag_raise(badgebckshdw)
+        menucanvas.tag_raise(badgebck)
     def badgeent(e):
         menucanvas.itemconfig(badge, fill='#968d8d')
         menucanvas.itemconfig(badgeshdw, fill='#1c1c1c')
@@ -2371,5 +2364,5 @@ def main(canvas_img_unused=None, canvasbg_unused=None, straight_to_noob=False, s
         else:
             clickclassic()
 loadsavedata()
-app.after(10, showwinpro)
+main()
 app.mainloop()

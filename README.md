@@ -34,6 +34,7 @@
 - Animateed pixel-art UI
 - Dynamic hue changing game background
 - Cross platform support (Windows/macOS coming)
+- Badge memory
 
 # Future plans
 - macOS .app release
@@ -62,7 +63,7 @@
 ### To run Pop The Clock, download the latest EXE, which can be found here: https://github.com/Beanzsigma/Pop-The-Clock/releases/tag/v1  - a macOS version will be released in the next update. When downloading the EXE version, windows will prompt you about some unknown publisher. To continue, click "More info," then "run anyway." 
 
 # Demo
-### Here is a google drive link to a demo video: 
+### Here is a google drive link to a demo video: https://drive.google.com/file/d/1FuSpA1m5QggboQWL5ONuS2E08hiAibBW/view?usp=sharing
 <img width="695" height="846" alt="Screenshot 2026-08-01 193539" src="https://github.com/user-attachments/assets/aa30ed3c-81fb-4d49-81b1-ffa7a4f79df0" />
 <img width="694" height="848" alt="Screenshot 2026-08-01 193726" src="https://github.com/user-attachments/assets/76dcedef-c438-495e-a178-93111a5a5e21" />
 

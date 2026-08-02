@@ -63,7 +63,7 @@
 #### For the most part, the rest of the application logic, UI development, and modes were created by me.
 
 # How to run:
-### To run Pop The Clock, download the latest EXE, which can be found here: https://github.com/Beanzsigma/Pop-The-Clock/releases/tag/v1  - a macOS version will be released in the next update. When downloading the EXE version, windows will prompt you about some unknown publisher. To continue, click "More info," then "run anyway." 
+### To run Pop The Clock, download the latest EXE, which can be found here: https://github.com/Beanzsigma/Pop-The-Clock/releases/tag/v1  - a macOS version will be released in the next update. When downloading the EXE version, windows will prompt you about some unknown publisher. To continue, click "More info," then "run anyway." To setup project from source code, run this in terminal: pyinstaller --onefile --windowed --icon="Assets/main/logo.ico" --add-data "Assets;Assets" main.py - then the app will appear in the dist folder.
 
 # Demo
 ### Here is a google drive link to a demo video: https://drive.google.com/file/d/1FuSpA1m5QggboQWL5ONuS2E08hiAibBW/view?usp=sharing

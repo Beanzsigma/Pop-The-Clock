@@ -46,7 +46,7 @@
 - Overall smoother gameplay
 
 # Disclaimer:
-### Pop the Clock was mainly built on macOS, so running it there will most likely run smoother over windows (only the EXE version is available now; the .app version will release in the next update). Pop The Clock is still in BETA, so there may be bugs that I'm unaware of. The current beta version uses frame based rendering, meaning system specs may slightly affect render speeds. A future update will improve this time. In addition, this game works and feels best on an external monitor, as that's where you can get the smoothest experience - when using a laptop screen, gameplay may feel a little slow. 
+### Pop The Clock was mainly developed on macOS, so the upcoming macOS version may provide the most optimized experience (only the EXE version is available now; the .app version will release in the next update). Pop The Clock is still in BETA, so there may be bugs that I'm unaware of. The current beta version uses frame based rendering, meaning system specs may slightly affect render speeds. A future update will improve this time. In addition, this game works and feels best on an external monitor, as that's where you can get the smoothest experience - when using a laptop screen, gameplay may feel a little slow. 
 
 # Text Animation
 ### The pulsing text throughout the game was inspired by a text animation effect I saw a YouTuber use in one of their projects. Each letter is drawn individually and offset using a sine wave, giving it that "cool" effect. Getting the timing and math was pretty tricky, so a friend of mine helped me get the feature fully working. 

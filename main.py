@@ -1594,7 +1594,7 @@ def normal(canvas, canvas_img):
     elif gamemode[0] == 'noob':
         showanimatedtext('good', 'good', 80, 100,amplitude=4, speed=0.12,wavelength=0.3, condition=lambda: gamemode[0]=='noob' and not specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('luck', 'luck!', 610, 630, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0] == 'noob' and not specialmode[0], basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
-        showanimatedtext('noob', "(☞ ͡° ͜ʖ ͡°)☞", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]== 'noob' and not specialmode[0], font=("Arial", 12), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
+        showanimatedtext('noob', "( ☞ ͡° ͜ʖ ͡°)☞", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]== 'noob' and not specialmode[0], font=("Arial", 12), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
         showanimatedtext('noob2', "•ᴗ•", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='noob' and not specialmode[0], font=("Arial", 20), basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
     elif gamemode[0] == 'pro':
         showanimatedtext("don't", "don't", 80, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))

@@ -1,3 +1,6 @@
+
+<img width="480" height="640" alt="Pop The Clock" src="https://github.com/user-attachments/assets/38ecc878-ed37-4ef6-a30e-a78e8edf8b92" />
+
 # Pop The Clock
 ### A fun, practice arcade style reaction game, inspired by Pop The Lock. A needle spins around a 12 numbered clock face, press the spacebar to flip direction Try to land on the highlighted number before it passes, or in Special mode, click the numbers in your code sequentially.
 

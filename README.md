@@ -63,4 +63,8 @@
 
 # Demo
 ### Here is a google drive link to a demo video: 
+<img width="695" height="846" alt="Screenshot 2026-08-01 193539" src="https://github.com/user-attachments/assets/aa30ed3c-81fb-4d49-81b1-ffa7a4f79df0" />
+<img width="694" height="848" alt="Screenshot 2026-08-01 193726" src="https://github.com/user-attachments/assets/76dcedef-c438-495e-a178-93111a5a5e21" />
+
+
 

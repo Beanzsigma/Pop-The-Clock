@@ -28,7 +28,7 @@
 ### I ran into many challenges while building this app. At first, I didn't know how to start with, but after many hours brainstorming with AI, I started building, creating the movement for the needle. I then realized realized the window geometry for the game was too small to add any numbers, so I spent many more grueling hours resizing and fixing everything. Also, when I tried adding the hue-changing feature, the switch was too sudden, so I spent many more hours reading docs and researching for ways to fix this, which ended up paying off. In addition to that, adding the text animation feature was a bit annoying, so I asked AI for help, but when that didn't work out well, I asked a friend, who ended up getting the feature working. This app has been a huge roller coaster, but in the end, I managed to pull through and get everything I wanted to get done in the first iteration. 
 
 # Disclaimer:
-### Pop the Clock was mainly built on macOS, and downloading the .app version for mac will most likely run smoother than the EXE. Pop The Clock is still in BETA, so there may be bugs that I'm unaware of. 
+### Pop the Clock was mainly built on macOS, and downloading the .app version for mac will most likely run smoother than the EXE. Pop The Clock is still in BETA, so there may be bugs that I'm unaware of. Also, this game renders the needle frames, which means systems with faster specs will experience faster timings. In addition, this game works and feels best on a external monitor, as that's where you can get the smoothest experience - when using a laptop screen, gameplay may feel a little slow. 
 
 # Text Animation
 ### The pulsing text throughout the game was inspired by a text animation effect I saw a YouTuber use in one of their projects. Each letter is drawn individually and offset using a sine wave, giving it that "cool" effect. Getting the timing and math was pretty tricky, so a friend of mine helped me get the feature fully working. 
@@ -41,5 +41,9 @@
 - For the parts I missed, some areas that use AI are declared in the commits
 #### For the most part, the rest of the application logic, UI development, and modes were created by me.
 
+# How to run:
+### To run Pop The Clock, download the latest EXE (for windows), or the .app version, which can be found here: . When downloading the EXE version, windows will prompt you about some unknown publisher. To continue, click "More info," then "run anyway." 
 
+# Demo
+### Here is a google drive link to a demo video: 
 

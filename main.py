@@ -58,7 +58,15 @@ def getpath(relative_path):
     except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-savefile = getpath("savedata.json")
+def getsavefilepath():
+    if sys.platform == 'win32':
+        base = os.environ.get('APPDATA', os.path.expanduser("~"))
+    else:
+        base = os.path.expanduser("~")
+    save_dir = os.path.join(base, "PopTheClock")
+    os.makedirs(save_dir, exist_ok=True)
+    return os.path.join(save_dir, "savedata.json")
+savefile = getsavefilepath()
 loadfont(getpath("Assets/PressStart2P-Regular.ttf"))
 logo_img = Image.open(getpath("Assets/main/logo.ico"))
 tk_icon = ImageTk.PhotoImage(logo_img)
@@ -1566,14 +1574,18 @@ def normal(canvas, canvas_img):
        if gamemode[0] == 'hacker':
            showanimatedtext('master', "master", 80, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: specialmode[0] and gamemode[0] == 'hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
            showanimatedtext("mind", "mind", 610, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: specialmode[0] and gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30))
+           showanimatedtext('hzk1', '⁴⁰⁴', 84, 630, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30), font=("Arial", 24))
+           showanimatedtext('hjkz2', "⚠︎", 620, 100, amplitude=6, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0]=='hacker', basecolor=(255, 140, 0), pulsecolor=(255, 30, 30), font=('Arial', 22))
        elif gamemode[0] == 'god':
             showanimatedtext("sppecgod1", 'locks', 80, 100, amplitude=7, speed=0.12, wavelength=0.5, condition=lambda: specialmode[0]and gamemode[0] == 'god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
             showanimatedtext('specgod2', "smith", 610, 630, amplitude=7, speed=0.12, wavelength=0.5, condition=lambda: specialmode[0] and gamemode[0]=='god', basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+            showanimatedtext('goz2', "( •̀⤙•́ )", 74, 630, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]=='god', font=("Arial", 14), basecolor=(220, 0, 40), pulsecolor=(180, 0, 255))
+            showanimatedtext("goz", "⳻_⳺", 620, 100, amplitude=7, speed=0.12, wavelength=0.6, condition=lambda: gamemode[0]== "god", font=("Arial", 14),basecolor=(220, 0, 40), pulsecolor=(180, 0, 255) )
        elif gamemode[0] == 'pro':   
             showanimatedtext('longer', 'longer', 80, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
             showanimatedtext('code', 'code??', 610, 630, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
-            #showanimatedtext('special', "⠃⠗⠁⠊⠇⠇⠑", 83, 638, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
-            #showanimatedtext('special2', "⏱", 620, 100, amplitude=5, speed=0.12, wavelength=0.4, condition=lambda: gamemode[0] == 'pro', basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+            showanimatedtext('poz2', "ᕙ(  •̀ ᗜ •́  )ᕗ", 74, 630, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='pro', font=("Arial", 12), basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
+            showanimatedtext('poz', "𓁹‿𓁹", 620, 100, amplitude=3.5, speed=0.12, wavelength=0.3, condition=lambda: gamemode[0]=='pro', font=("Arial", 12), basecolor=(255, 220, 60), pulsecolor=(255, 140, 0))
        else:
             showanimatedtext('pop', 'pop', 80, 100, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0] and gamemode[0] == 'noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))
             showanimatedtext('thecode', 'the clock!', 582, 636, amplitude=4, speed=0.12, wavelength=0.3, condition=lambda: specialmode[0] and gamemode[0] == 'noob', basecolor=(255, 255, 255), pulsecolor=(0, 200, 255))

@@ -62,8 +62,14 @@
 - For the parts I missed, some areas that use AI are declared in the commits
 #### For the most part, the rest of the application logic, UI development, and modes were created by me.
 
+# Development:
+
+## Running From Source
+
+### To set up the project from source code, first clone the repo using this: git clone https://github.com/Beanzsigma/Pop-The-Clock.git. Then, install dependencies using this: pip install customtkinter pillow numpy - make sure to have at least Python 3.10+ downloaded. Finally, to run the game, paste this into the terminal: python main.py, or click the start button. If you want to create an EXE, do the first two steps, then run this in the terminal: pyinstaller --onefile --windowed --icon="Assets/main/logo.ico" --add-data "Assets;Assets" main.py. The app will appear in the dist folder. 
+
 # How to run:
-### To run Pop The Clock, download the latest EXE, which can be found here: https://github.com/Beanzsigma/Pop-The-Clock/releases/tag/v1  - a macOS version will be released in the next update. When downloading the EXE version, Windows will prompt you about some unknown publisher. To continue, click "More info," then "run anyway." To set up the project from source code, first clone the repo, then run this in the terminal: pyinstaller --onefile --windowed --icon="Assets/main/logo.ico" --add-data "Assets;Assets" main.py - then the app will appear in the dist folder.
+### To run Pop The Clock, download the latest EXE, which can be found here: https://github.com/Beanzsigma/Pop-The-Clock/releases/tag/v1  - a macOS version will be released in the next update. When downloading the EXE version, Windows will prompt you about some unknown publisher. To continue, click "More info," then "run anyway." 
 
 # Demo
 ### Here is a Google Drive link to a demo video: https://drive.google.com/file/d/1FuSpA1m5QggboQWL5ONuS2E08hiAibBW/view?usp=sharing
